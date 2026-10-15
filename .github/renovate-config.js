@@ -64,6 +64,20 @@ if (process.env.RENOVATE_GLOBAL_EXTENDS) {
   }
 }
 
+// Instrument global Error to print full stack trace on REPOSITORY_CHANGED
+if (!global._patchedForRenovateErrors) {
+  const OriginalError = global.Error;
+  global.Error = function (message, ...args) {
+    const err = new OriginalError(message, ...args);
+    if (message === "repository-changed") {
+      console.error("RENOVATE_ABORT_TRACE:\n" + (err.stack || message));
+    }
+    return err;
+  };
+  global.Error.prototype = OriginalError.prototype;
+  global._patchedForRenovateErrors = true;
+}
+
 // Format JSON output from Renovate's JSONWriter to match Prettier conventions
 // (single-line arrays when within standard line length limits)
 try {
@@ -305,6 +319,12 @@ try {
                     "Dependency Dashboard",
                     ...args
                   );
+                } else if (!issue && title === "Dependency Dashboard") {
+                  issue = await target.findIssue.call(
+                    target,
+                    "Renovate Dashboard 🤖",
+                    ...args
+                  );
                 }
                 return issue;
               };
@@ -314,6 +334,57 @@ try {
         });
         api.default.set(name, proxy);
       }
+    }
+  }
+
+  // Patch SCM implementation (e.g. GithubScm) to prevent branch push failures
+  // or git bad revision errors from aborting the entire renovation run
+  let scmMod;
+  const scmCandidate = path.join(mainDir, "modules/platform/scm.js");
+  if (fs.existsSync(scmCandidate)) {
+    scmMod = require(scmCandidate);
+  }
+  if (!scmMod) {
+    const scmKey = Object.keys(require.cache).find((k) =>
+      k.includes("modules/platform/scm")
+    );
+    if (scmKey) {
+      scmMod = require(scmKey);
+    }
+  }
+  if (
+    scmMod &&
+    scmMod.platformScmImpls &&
+    scmMod.platformScmImpls.has("github")
+  ) {
+    const OrigGithubScm = scmMod.platformScmImpls.get("github");
+    if (!OrigGithubScm._patchedForSafety) {
+      class SafeGithubScm extends OrigGithubScm {
+        async mergeAndPush(...args) {
+          try {
+            return await super.mergeAndPush(...args);
+          } catch (err) {
+            console.warn(
+              "Safeguarded scm.mergeAndPush error:",
+              err?.message || err
+            );
+            throw new Error("failed");
+          }
+        }
+        async isBranchModified(...args) {
+          try {
+            return await super.isBranchModified(...args);
+          } catch (err) {
+            console.warn(
+              "Safeguarded scm.isBranchModified error:",
+              err?.message || err
+            );
+            return false;
+          }
+        }
+      }
+      SafeGithubScm._patchedForSafety = true;
+      scmMod.platformScmImpls.set("github", SafeGithubScm);
     }
   }
 

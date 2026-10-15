@@ -86,7 +86,7 @@
         "github-actions"
       ],
       "automerge": true,
-      "automergeType": "branch",
+      "automergeType": "pr",
       "matchUpdateTypes": [
         "minor",
         "patch",
@@ -101,7 +101,7 @@
         "pre-commit"
       ],
       "automerge": true,
-      "automergeType": "branch",
+      "automergeType": "pr",
       "matchUpdateTypes": [
         "minor",
         "patch"
