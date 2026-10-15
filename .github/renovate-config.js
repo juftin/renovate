@@ -338,7 +338,7 @@ module.exports = {
   onboarding:
     process.env.RENOVATE_ONBOARDING !== undefined
       ? process.env.RENOVATE_ONBOARDING === "true"
-      : true,
+      : false,
   onboardingConfigFileName:
     process.env.RENOVATE_ONBOARDING_CONFIG_FILE_NAME || "renovate.json",
   onboardingPrTitle:
