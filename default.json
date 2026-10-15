@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Default Renovate configuration preset",
+  "description": "Default Renovate configuration with Conventional Commits",
   "extends": [
     "config:recommended",
     "docker:enableMajor",
@@ -13,89 +13,89 @@
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
   "packageRules": [
     {
-      "description": "Gitmoji commit prefix for major updates",
+      "description": "Conventional commit prefix for major updates",
       "matchUpdateTypes": [
         "major"
       ],
-      "semanticCommitType": "💥 ",
+      "semanticCommitType": "feat",
       "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
       "labels": [
         "type/major"
       ]
     },
     {
-      "description": "Gitmoji commit prefix for minor updates",
+      "description": "Conventional commit prefix for minor updates",
       "matchUpdateTypes": [
         "minor"
       ],
-      "semanticCommitType": "✨ ",
+      "semanticCommitType": "feat",
       "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
       "labels": [
         "type/minor"
       ]
     },
     {
-      "description": "Gitmoji commit prefix for patch updates",
+      "description": "Conventional commit prefix for patch updates",
       "matchUpdateTypes": [
         "patch"
       ],
-      "semanticCommitType": "🐛 ",
+      "semanticCommitType": "fix",
       "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
       "labels": [
         "type/patch"
       ]
     },
     {
-      "description": "Gitmoji commit prefix for digest updates",
+      "description": "Conventional commit prefix for digest updates",
       "matchUpdateTypes": [
         "digest",
         "pinDigest"
       ],
-      "semanticCommitType": "📌 ",
+      "semanticCommitType": "chore",
       "commitMessageExtra": "( {{currentDigestShort}} → {{newDigestShort}} )",
       "labels": [
         "type/digest"
       ]
     },
     {
-      "description": "Gitmoji commit prefix for pin updates",
+      "description": "Conventional commit prefix for pin updates",
       "matchUpdateTypes": [
         "pin"
       ],
-      "semanticCommitType": "📌 ",
+      "semanticCommitType": "chore",
       "commitMessageExtra": "( {{newVersion}} )",
       "labels": [
         "type/pin"
       ]
     },
     {
-      "description": "Gitmoji commit prefix for lockfile maintenance",
+      "description": "Conventional commit prefix for lockfile maintenance",
       "matchUpdateTypes": [
         "lockFileMaintenance",
         "lockfileUpdate"
       ],
-      "semanticCommitType": "🔒 ",
+      "semanticCommitType": "chore",
       "labels": [
         "type/lockfile"
       ]
     },
     {
-      "description": "Gitmoji commit prefix and scope for GitHub Actions",
+      "description": "Conventional commit prefix and scope for GitHub Actions",
       "matchManagers": [
         "github-actions"
       ],
-      "semanticCommitType": "👷 ",
+      "semanticCommitType": "ci",
       "semanticCommitScope": "github-action",
       "commitMessageTopic": "action {{depName}}"
     },
     {
-      "description": "Gitmoji commit prefix for bump and replacement updates",
+      "description": "Conventional commit prefix for bump and replacement updates",
       "matchUpdateTypes": [
         "bump",
         "replacement",
         "rollback"
       ],
-      "semanticCommitType": "📌 "
+      "semanticCommitType": "chore"
     },
     {
       "description": "Label and scope Docker container dependencies",
