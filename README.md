@@ -14,27 +14,39 @@ Fork this repository into your account or organization. Open its **Actions** tab
 
 A GitHub App is recommended. It provides a bot identity and allows PRs created by Renovate to trigger downstream GitHub Actions workflows.
 
+#### GitHub App permissions
+
+In the app's **Permissions & events** settings, configure these exact **Repository permissions**. This list follows [Renovate's GitHub App requirements](https://docs.renovatebot.com/modules/platform/github/#running-as-a-github-app).
+
+| Repository permission | Required access | Used for |
+|---|---|---|
+| Administration | **Read-only** | Inspect repository settings and protection rules |
+| Checks | **Read and write** | Read and manage checks |
+| Commit statuses | **Read and write** | Read CI status and publish Renovate status checks |
+| Contents | **Read and write** | Read files and push update branches |
+| Dependabot alerts | **Read-only** | Read vulnerability alerts |
+| Issues | **Read and write** | Create and update `Renovate Dashboard 🤖` issues |
+| Metadata | **Read-only** (automatically granted) | Access repository metadata |
+| Pull requests | **Read and write** | Create, update, and merge PRs |
+| Workflows | **Read and write** | Update files in `.github/workflows/` |
+
+Add these permissions only when the condition applies:
+
+| Permission section | Permission | Access | When needed |
+|---|---|---|---|
+| Organization permissions | Members | **Read-only** | Installing the app on an organization; not needed for a personal account |
+| Repository permissions | Merge queues | **Read and write** | Managing repositories that use GitHub merge queues |
+
+Leave all other permissions at **No access**, including **Account permissions**. The app installation must include every repository you want to manage, including this runner. Issues must also be enabled in those repositories for dashboards to be created.
+
+#### Create and install the app
+
 1. Open **[Settings → Developer settings → GitHub Apps → New GitHub App](https://github.com/settings/apps/new)**. For an organization, use its GitHub App settings instead.
 2. Choose a name and use your runner repository URL as the homepage URL. Disable the webhook; this runner uses a schedule.
-3. Grant these **repository permissions**, following [Renovate's GitHub App documentation](https://docs.renovatebot.com/modules/platform/github/#running-as-a-github-app):
-
-   | Permission | Access | Purpose |
-   |---|---|---|
-   | Administration | Read | Inspect repository settings and protection rules |
-   | Checks | Read & write | Read and manage checks |
-   | Commit statuses | Read & write | Read CI status and publish Renovate status checks |
-   | Contents | Read & write | Read files and push update branches |
-   | Dependabot alerts | Read | Read vulnerability alerts |
-   | Issues | Read & write | Create and update Dependency Dashboards |
-   | Metadata | Read | Access repository metadata |
-   | Pull requests | Read & write | Create, update, and merge PRs |
-   | Workflows | Read & write | Update GitHub Actions workflow files |
-   | Merge queues | Read & write | Only needed for repositories using a merge queue |
-
-4. For an organization installation, also grant **Members: Read** under organization permissions.
-5. Create the app, note its **App ID**, and generate a private key from its **General** settings.
-6. Install the app on your account or organization. Grant access to all repositories you want the runner to manage, including the runner repository and any private preset repository. Selecting **All repositories** allows newly tagged repositories to be discovered automatically.
-7. In the runner repository's **Settings → Secrets and variables → Actions**, add:
+3. Set the [GitHub App permissions](#github-app-permissions) listed above.
+4. Create the app, note its **App ID**, and generate a private key from its **General** settings.
+5. Install the app on your account or organization. Grant access to all repositories you want the runner to manage, including the runner repository and any private preset repository. Selecting **All repositories** allows newly tagged repositories to be discovered automatically.
+6. In the runner repository's **Settings → Secrets and variables → Actions**, add:
 
    | Secret | Value |
    |---|---|
@@ -43,7 +55,14 @@ A GitHub App is recommended. It provides a bot identity and allows PRs created b
 
    `RENOVATE_APP_ID` and `RENOVATE_APP_PRIVATE_KEY` are also accepted.
 
-**Updating an existing app:** Open the app's **Permissions & events**, update its permissions, and save. Then approve the new permissions for its installation under **Settings → Applications → Installed GitHub Apps** (or the organization's installed app settings). Check for a pending **Review request**. GitHub documents this process under [changing a GitHub App's permissions](https://docs.github.com/en/apps/maintaining-github-apps/modifying-a-github-app-registration#changing-the-permissions-of-a-github-app). The next workflow run generates a fresh installation token.
+#### Update an existing app's permissions
+
+1. Open **Settings → Developer settings → GitHub Apps → your app → Permissions & events**.
+2. Apply the [exact permission settings above](#github-app-permissions) and **Save changes**.
+3. Open **Settings → Applications → Installed GitHub Apps** (or the organization's installed app settings), find the app, and approve its pending **Review request**. **Saving the app registration alone does not grant new permissions to an existing installation.** See [GitHub's permission update instructions](https://docs.github.com/en/apps/maintaining-github-apps/modifying-a-github-app-registration#changing-the-permissions-of-a-github-app).
+4. Rerun the Renovate workflow. It generates a fresh installation token with the approved permissions. Keep the existing `APP_ID` and `APP_PRIVATE_KEY`; neither needs to be replaced for a permission change.
+
+#### PAT alternative
 
 Alternatively, provide a dedicated account's PAT as `RENOVATE_TOKEN` or `APP_TOKEN`. A classic PAT needs `repo` and `workflow` scopes; a fine-grained PAT needs the applicable repository permissions above. PAT-created PRs can trigger Actions when the token has the required access. The workflow's built-in `github.token` fallback is scoped to the runner repository and is unsuitable for managing downstream repositories.
 
