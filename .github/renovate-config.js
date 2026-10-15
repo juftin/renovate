@@ -267,6 +267,48 @@ try {
                 return pr;
               };
             }
+            if (prop === "setBranchStatus") {
+              return async function (...args) {
+                try {
+                  return await target.setBranchStatus.call(target, ...args);
+                } catch {
+                  // Never let status check errors (e.g. 404/403 when GitHub App lacks status permissions)
+                  // throw REPOSITORY_CHANGED and crash the entire renovation run.
+                  return;
+                }
+              };
+            }
+            if (prop === "getBranchStatusCheck") {
+              return async function (...args) {
+                try {
+                  return await target.getBranchStatusCheck.call(target, ...args);
+                } catch {
+                  return null;
+                }
+              };
+            }
+            if (prop === "getBranchStatus") {
+              return async function (...args) {
+                try {
+                  return await target.getBranchStatus.call(target, ...args);
+                } catch {
+                  return "yellow";
+                }
+              };
+            }
+            if (prop === "findIssue") {
+              return async function (title, ...args) {
+                let issue = await target.findIssue.call(target, title, ...args);
+                if (!issue && title === "Renovate Dashboard 🤖") {
+                  issue = await target.findIssue.call(
+                    target,
+                    "Dependency Dashboard",
+                    ...args
+                  );
+                }
+                return issue;
+              };
+            }
             return Reflect.get(target, prop, receiver);
           },
         });
@@ -306,14 +348,16 @@ try {
       config,
       allBranches,
       packageFiles = {},
-      configMigrationRes
+      configMigrationRes = { result: "no-config" }
     ) {
-      if (
-        config &&
-        config.dependencyDashboard &&
-        config.repoIsOnboarded === false
-      ) {
-        config = { ...config, repoIsOnboarded: true };
+      if (config && config.dependencyDashboard !== false) {
+        config = {
+          ...config,
+          dependencyDashboard: true,
+          repoIsOnboarded: true,
+          dependencyDashboardTitle:
+            config.dependencyDashboardTitle || "Renovate Dashboard 🤖",
+        };
       }
       return origEnsureDependencyDashboard.call(
         this,
@@ -324,6 +368,93 @@ try {
       );
     };
     depDashboard.ensureDependencyDashboard._patchedForDashboard = true;
+  }
+
+  // Patch extractDependencies to retain extracted branches and package files
+  // so they are available to ensure Dependency Dashboard even if an update fails
+  let procMod;
+  const procCandidate = path.join(
+    mainDir,
+    "workers/repository/process/index.js"
+  );
+  if (fs.existsSync(procCandidate)) {
+    procMod = require(procCandidate);
+  }
+  if (!procMod) {
+    const procKey = Object.keys(require.cache).find((k) =>
+      k.includes("workers/repository/process/index")
+    );
+    if (procKey) {
+      procMod = require(procKey);
+    }
+  }
+  if (
+    procMod &&
+    typeof procMod.extractDependencies === "function" &&
+    !procMod.extractDependencies._patchedForDashboard
+  ) {
+    const origExtractDependencies = procMod.extractDependencies;
+    procMod.extractDependencies = async function (config, ...args) {
+      const res = await origExtractDependencies.call(this, config, ...args);
+      if (config && res) {
+        config._extractedBranches = res.branches;
+        config._extractedPackageFiles = res.packageFiles;
+        config._extractedBranchList = res.branchList;
+      }
+      return res;
+    };
+    procMod.extractDependencies._patchedForDashboard = true;
+  }
+
+  // Patch handleError to ensure Dependency Dashboard is created/updated
+  // even if an update encounters an abort (e.g. repository-changed) or error
+  let errMod;
+  const errCandidate = path.join(mainDir, "workers/repository/error.js");
+  if (fs.existsSync(errCandidate)) {
+    errMod = require(errCandidate);
+  }
+  if (!errMod) {
+    const errKey = Object.keys(require.cache).find((k) =>
+      k.includes("workers/repository/error")
+    );
+    if (errKey) {
+      errMod = require(errKey);
+    }
+  }
+  if (
+    errMod &&
+    typeof errMod.default === "function" &&
+    !errMod.default._patchedForDashboard
+  ) {
+    const origHandleError = errMod.default;
+    errMod.default = async function (config, err) {
+      if (
+        config &&
+        config.dependencyDashboard !== false &&
+        config._extractedBranches &&
+        depDashboard &&
+        typeof depDashboard.ensureDependencyDashboard === "function"
+      ) {
+        try {
+          await depDashboard.ensureDependencyDashboard(
+            {
+              ...config,
+              dependencyDashboard: true,
+              repoIsOnboarded: true,
+              dependencyDashboardTitle:
+                config.dependencyDashboardTitle || "Renovate Dashboard 🤖",
+            },
+            config._extractedBranches,
+            config._extractedPackageFiles || {},
+            { result: "no-config" }
+          );
+        } catch {
+          // Ignore error during fallback dashboard generation
+        }
+      }
+      return origHandleError.call(this, config, err);
+    };
+    errMod.default._patchedForDashboard = true;
   }
 } catch {
   // Graceful fallback if not running within Renovate execution context

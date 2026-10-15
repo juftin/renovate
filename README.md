@@ -74,6 +74,7 @@ GitHub Apps provide higher API rate limits (15,000 req/hr), enable downstream Gi
    - `Pull requests`: **Read & write** *(to create and update PRs)*
    - `Issues`: **Read & write** *(to manage the Dependency Dashboard)*
    - `Workflows`: **Read & write** *(to update workflow files in `.github/workflows/`)*
+   - `Commit statuses`: **Read & write** *(to set stability and merge confidence status checks)*
    - `Metadata`: **Read-only** *(selected automatically)*
 5. Under **Where can this GitHub App be installed?**, select **Only on this account**.
 6. Click **Create GitHub App**.
