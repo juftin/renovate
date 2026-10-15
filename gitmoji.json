@@ -80,6 +80,15 @@
       "semanticCommitType": "👷 ",
       "semanticCommitScope": "github-action",
       "commitMessageTopic": "action {{depName}}"
+    },
+    {
+      "description": "Gitmoji commit prefix for bump and replacement updates",
+      "matchUpdateTypes": [
+        "bump",
+        "replacement",
+        "rollback"
+      ],
+      "semanticCommitType": "📌 "
     }
   ]
 }

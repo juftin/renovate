@@ -205,6 +205,7 @@ try {
 module.exports = {
   platform: "github",
   ...(gitAuthor ? { gitAuthor } : {}),
+  semanticCommits: process.env.RENOVATE_SEMANTIC_COMMITS || "enabled",
   onboarding:
     process.env.RENOVATE_ONBOARDING !== undefined
       ? process.env.RENOVATE_ONBOARDING === "true"

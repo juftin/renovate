@@ -174,6 +174,14 @@ This repository serves as a **Shareable Config Preset** host. Repositories can r
 }
 ```
 
+> [!IMPORTANT]
+> **GitMoji by Default**: This repository is configured to **always use GitMoji** for all commit messages and pull request titles across both this runner and all onboarded downstream repositories:
+> - **Onboarding Pull Requests:** Titled **`👷 configure renovate`** with commit message **`👷 configure renovate`**.
+> - **Downstream Dependency Updates:** Formatted with [GitMoji](https://gitmoji.dev/) prefixes (`💥 `, `✨ `, `🐛 `, `📌 `, `👷 `, `🔒 `).
+> - **Automatic Downstream Application:** When downstream repositories are onboarded, Renovate generates a `renovate.json` that extends `"github><owner>/<repo>"`, automatically inheriting all GitMoji rules from [`gitmoji.json`](gitmoji.json).
+
+---
+
 ### 1. Default Preset (`default.json`)
 
 **Reference:** `"extends": ["github><owner>/<repo>"]`
@@ -191,11 +199,11 @@ Features:
 **Reference:** `"extends": ["github><owner>/<repo>:gitmoji"]`
 
 Features:
-- Semantic commits formatted with [Gitmoji](https://gitmoji.dev/):
+- Semantic commits formatted with [GitMoji](https://gitmoji.dev/):
   - 💥 `major` updates (`semanticCommitType: "💥 "`)
   - ✨ `minor` updates (`semanticCommitType: "✨ "`)
   - 🐛 `patch` updates (`semanticCommitType: "🐛 "`)
-  - 📌 `digest` and `pin` updates (`semanticCommitType: "📌 "`)
+  - 📌 `digest`, `pin`, `bump`, and `replacement` updates (`semanticCommitType: "📌 "`)
   - 👷 GitHub Actions updates (`semanticCommitType: "👷 "`, scope: `github-action`)
   - 🔒 Lockfile maintenance (`semanticCommitType: "🔒 "`)
 - Formatted version tags `( {{currentVersion}} → {{newVersion}} )` and labels (`type/major`, `type/minor`, `type/patch`, `type/digest`).
@@ -208,7 +216,7 @@ Features:
 - Standard [Conventional Commits](https://www.conventionalcommits.org/) (no emojis):
   - `feat` for `major` and `minor` updates (`semanticCommitType: "feat"`)
   - `fix` for `patch` updates (`semanticCommitType: "fix"`)
-  - `chore` for `digest`, `pin`, and `lockFileMaintenance` (`semanticCommitType: "chore"`)
+  - `chore` for `digest`, `pin`, `bump`, `replacement`, and `lockFileMaintenance` (`semanticCommitType: "chore"`)
   - `ci` for GitHub Actions (`semanticCommitType: "ci"`, scope: `github-action`)
 - Formatted version tags `( {{currentVersion}} → {{newVersion}} )` and standard type labels.
 
@@ -223,25 +231,29 @@ Features:
   - Mise tool configurations
 - Requires a **3-day stability period** (`minimumReleaseAge: "3 days"`) and passing CI tests before merging.
 
-### Example Configurations for Target Repositories
+---
+
+## 🛠️ Changing & Customizing Settings
+
+### 1. Switching the Entire Runner Globally to Conventional Commits
+If you fork this repository and prefer Conventional Commits (`feat:`, `fix:`, `chore:`, etc. without emojis) across **all** your repositories:
+1. In your runner repository, go to **Settings → Secrets and variables → Actions → Variables**.
+2. Add or update the `RENOVATE_CONFIG_PRESET` variable:
+   ```
+   RENOVATE_CONFIG_PRESET = github><owner>/<repo>:conventional
+   ```
+3. The runner will automatically:
+   - Create onboarding pull requests titled **`chore: configure renovate`**.
+   - Set the onboarded repositories' `renovate.json` to extend `github><owner>/<repo>:conventional`.
+   - Use standard Conventional Commits for all dependency updates.
+
+### 2. Overriding Settings on an Individual Downstream Repository
+If your runner uses the default GitMoji configuration, but an individual downstream repository requires different settings, you can override them in that repository's `renovate.json`:
 
 <details open>
-<summary><b>Example A: Using Gitmoji Commits</b></summary>
+<summary><b>Option A: Use Conventional Commits on a Specific Repository</b></summary>
 
-```json5
-{
-  $schema: "https://docs.renovatebot.com/renovate-schema.json",
-  extends: [
-    "github><owner>/<repo>",
-    "github><owner>/<repo>:automerge",
-  ],
-}
-```
-
-</details>
-
-<details>
-<summary><b>Example B: Using Conventional Commits (No Emojis)</b></summary>
+Extend `github><owner>/<repo>:conventional` after the default preset to override GitMoji rules:
 
 ```json5
 {
@@ -256,13 +268,53 @@ Features:
 
 </details>
 
-### Customizing Presets
+<details>
+<summary><b>Option B: Disable Semantic Commits Completely on a Specific Repository</b></summary>
 
-To adapt the presets to your team's conventions:
-- Edit [`default.json`](default.json) to adjust base managers or labels.
-- Edit [`gitmoji.json`](gitmoji.json) or [`conventional.json`](conventional.json) to adjust commit prefixes and types.
+Extend `:semanticCommitsDisabled` to turn off all semantic prefixes:
+
+```json5
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    "github><owner>/<repo>",
+    ":semanticCommitsDisabled",
+  ],
+}
+```
+
+</details>
+
+<details>
+<summary><b>Option C: Custom Package Rules & Scopes on a Specific Repository</b></summary>
+
+Add a custom `packageRules` block to override or add commit types, scopes, or schedules for specific dependencies:
+
+```json5
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    "github><owner>/<repo>",
+  ],
+  packageRules: [
+    {
+      matchPackageNames: ["pytest"],
+      semanticCommitType: "🧪 ",
+      semanticCommitScope: "tests",
+    },
+  ],
+}
+```
+
+</details>
+
+### 3. Customizing Runner Presets Directly
+You can also customize the presets directly in your runner repository:
+- Edit [`default.json`](default.json) to adjust base managers, labels, or regex patterns.
+- Edit [`gitmoji.json`](gitmoji.json) to customize GitMoji emojis or update types.
+- Edit [`conventional.json`](conventional.json) to adjust Conventional Commit types.
 - Edit [`automerge.json`](automerge.json) to tweak stability periods or add managers for automated merging.
-- Any repository extending `"github><owner>/<repo>"` will automatically adopt your updated presets on subsequent runs.
+- Any downstream repository extending `"github><owner>/<repo>"` automatically receives your updated rules on the next scheduled run.
 
 ---
 
@@ -278,6 +330,9 @@ Configure these under **Settings → Secrets and variables → Actions → Varia
 | `RENOVATE_AUTODISCOVER_TOPICS` | JSON array or topic string for target repositories | `["renovate"]` |
 | `RENOVATE_CONFIG_PRESET` | Preset used in onboarding pull requests | `github><owner>/<repo>` |
 | `RENOVATE_ONBOARDING_CONFIG_FILE_NAME` | Configuration file name created in onboarded repositories | `renovate.json` |
+| `RENOVATE_SEMANTIC_COMMITS` | Semantic commit mode across all repositories (`enabled`, `auto`, `disabled`) | `enabled` |
+| `RENOVATE_ONBOARDING_PR_TITLE` | Custom title for onboarding pull requests | `👷 configure renovate` |
+| `RENOVATE_ONBOARDING_COMMIT_MESSAGE` | Custom commit message for onboarding commits | `👷 configure renovate` |
 
 > [!TIP]
 > **Prettier & Pre-commit Compatibility**: The runner automatically formats onboarding configuration files (`renovate.json`) to adhere to Prettier's single-line array conventions so that CI checks and pre-commit hooks pass without modification. If you prefer using `.renovaterc.json5` or another file format for onboarding, set `RENOVATE_ONBOARDING_CONFIG_FILE_NAME` in repository variables.

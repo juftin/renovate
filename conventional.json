@@ -80,6 +80,15 @@
       "semanticCommitType": "ci",
       "semanticCommitScope": "github-action",
       "commitMessageTopic": "action {{depName}}"
+    },
+    {
+      "description": "Conventional commit prefix for bump and replacement updates",
+      "matchUpdateTypes": [
+        "bump",
+        "replacement",
+        "rollback"
+      ],
+      "semanticCommitType": "chore"
     }
   ]
 }
