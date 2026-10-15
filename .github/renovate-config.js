@@ -170,42 +170,160 @@ try {
     }
   }
   if (api && api.default) {
-    for (const [, platformApi] of api.default.entries()) {
+    for (const [name, platformApi] of api.default.entries()) {
       if (platformApi && !platformApi._patchedForGitmoji) {
-        if (typeof platformApi.createPr === "function") {
-          const origCreatePr = platformApi.createPr;
-          platformApi.createPr = function (options) {
-            if (options && options.prTitle && options.prTitle.startsWith("chore: 👷")) {
-              options.prTitle = options.prTitle.replace(/^chore:\s*/, "");
+        const proxy = new Proxy(platformApi, {
+          get(target, prop, receiver) {
+            if (prop === "_patchedForGitmoji") {
+              return true;
             }
-            return origCreatePr.call(this, options);
-          };
-        }
-        if (typeof platformApi.updatePr === "function") {
-          const origUpdatePr = platformApi.updatePr;
-          platformApi.updatePr = function (options) {
-            if (options && options.prTitle && options.prTitle.startsWith("chore: 👷")) {
-              options.prTitle = options.prTitle.replace(/^chore:\s*/, "");
+            if (prop === "createPr") {
+              return function (options, ...args) {
+                if (
+                  options &&
+                  options.prTitle &&
+                  options.prTitle.startsWith("chore: 👷")
+                ) {
+                  options.prTitle = options.prTitle.replace(/^chore:\s*/, "");
+                }
+                return target.createPr.call(target, options, ...args);
+              };
             }
-            return origUpdatePr.call(this, options);
-          };
-        }
-        if (typeof platformApi.getBranchPr === "function") {
-          const origGetBranchPr = platformApi.getBranchPr;
-          platformApi.getBranchPr = async function (branchName, ...args) {
-            const pr = await origGetBranchPr.call(this, branchName, ...args);
-            if (pr && pr.title && pr.title.startsWith("chore: 👷")) {
-              if (pr.bodyStruct) {
-                pr.bodyStruct.hash = null;
-              }
-              pr.title = pr.title.replace(/^chore:\s*/, "");
+            if (prop === "updatePr") {
+              return function (options, ...args) {
+                if (
+                  options &&
+                  options.prTitle &&
+                  options.prTitle.startsWith("chore: 👷")
+                ) {
+                  options.prTitle = options.prTitle.replace(/^chore:\s*/, "");
+                }
+                return target.updatePr.call(target, options, ...args);
+              };
             }
-            return pr;
-          };
-        }
-        platformApi._patchedForGitmoji = true;
+            if (prop === "getBranchPr") {
+              return async function (branchName, ...args) {
+                const pr = await target.getBranchPr.call(
+                  target,
+                  branchName,
+                  ...args
+                );
+                if (pr && pr.title && pr.title.startsWith("chore: 👷")) {
+                  if (pr.bodyStruct) {
+                    pr.bodyStruct.hash = null;
+                  }
+                  pr.title = pr.title.replace(/^chore:\s*/, "");
+                }
+                return pr;
+              };
+            }
+            if (prop === "getPrList") {
+              return async function (...args) {
+                const list = await target.getPrList.call(target, ...args);
+                if (Array.isArray(list)) {
+                  for (const pr of list) {
+                    if (pr && pr.title && pr.title.startsWith("chore: 👷")) {
+                      if (pr.bodyStruct) {
+                        pr.bodyStruct.hash = null;
+                      }
+                      pr.title = pr.title.replace(/^chore:\s*/, "");
+                    }
+                  }
+                }
+                return list;
+              };
+            }
+            if (prop === "findPr") {
+              return async function (options, ...args) {
+                let pr = await target.findPr.call(target, options, ...args);
+                if (!pr && options) {
+                  if (
+                    options.branchName &&
+                    (options.branchName === "renovate/configure" ||
+                      options.branchName.endsWith("/configure"))
+                  ) {
+                    // If searching for an onboarding PR, also match any closed PR on this branch
+                    const newOpt = { ...options };
+                    delete newOpt.prTitle;
+                    pr = await target.findPr.call(target, newOpt, ...args);
+                  } else if (options.prTitle) {
+                    // Try matching alternate title format (with or without 'chore: ' prefix)
+                    const altTitle = options.prTitle.startsWith("chore: ")
+                      ? options.prTitle.replace(/^chore:\s*/, "")
+                      : `chore: ${options.prTitle}`;
+                    pr = await target.findPr.call(
+                      target,
+                      { ...options, prTitle: altTitle },
+                      ...args
+                    );
+                  }
+                }
+                if (pr && pr.title && pr.title.startsWith("chore: 👷")) {
+                  if (pr.bodyStruct) {
+                    pr.bodyStruct.hash = null;
+                  }
+                  pr.title = pr.title.replace(/^chore:\s*/, "");
+                }
+                return pr;
+              };
+            }
+            return Reflect.get(target, prop, receiver);
+          },
+        });
+        api.default.set(name, proxy);
       }
     }
+  }
+
+  // Ensure Dependency Dashboard is always generated for downstream repositories,
+  // even if onboarding status was not marked or config is optional
+  let depDashboard;
+  const depDashboardCandidate = path.join(
+    mainDir,
+    "workers/repository/dependency-dashboard.js"
+  );
+  if (fs.existsSync(depDashboardCandidate)) {
+    depDashboard = require(depDashboardCandidate);
+  }
+  if (!depDashboard) {
+    const ddKey = Object.keys(require.cache).find(
+      (k) =>
+        k.includes("workers/repository/dependency-dashboard") ||
+        k.includes("dependency-dashboard.js")
+    );
+    if (ddKey) {
+      depDashboard = require(ddKey);
+    }
+  }
+  if (
+    depDashboard &&
+    typeof depDashboard.ensureDependencyDashboard === "function" &&
+    !depDashboard.ensureDependencyDashboard._patchedForDashboard
+  ) {
+    const origEnsureDependencyDashboard =
+      depDashboard.ensureDependencyDashboard;
+    depDashboard.ensureDependencyDashboard = async function (
+      config,
+      allBranches,
+      packageFiles = {},
+      configMigrationRes
+    ) {
+      if (
+        config &&
+        config.dependencyDashboard &&
+        config.repoIsOnboarded === false
+      ) {
+        config = { ...config, repoIsOnboarded: true };
+      }
+      return origEnsureDependencyDashboard.call(
+        this,
+        config,
+        allBranches,
+        packageFiles,
+        configMigrationRes
+      );
+    };
+    depDashboard.ensureDependencyDashboard._patchedForDashboard = true;
   }
 } catch {
   // Graceful fallback if not running within Renovate execution context
@@ -214,6 +332,7 @@ try {
 /** @type {import('renovate').RenovateConfig} */
 module.exports = {
   platform: "github",
+  ignorePrAuthor: true,
   ...(gitAuthor ? { gitAuthor } : {}),
   semanticCommits: process.env.RENOVATE_SEMANTIC_COMMITS || "enabled",
   onboarding:
