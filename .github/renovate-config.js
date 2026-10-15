@@ -1,8 +1,6 @@
 // $schema: "https://docs.renovatebot.com/renovate-schema.json"
 
-const gitAuthor =
-  process.env.GIT_AUTHOR ||
-  "github-actions[bot] <github-actions[bot]@users.noreply.github.com>";
+const gitAuthor = process.env.GIT_AUTHOR;
 
 const targetRepo =
   process.env.RENOVATE_REPOSITORY &&
@@ -35,7 +33,7 @@ if (process.env.RENOVATE_AUTODISCOVER_TOPICS) {
 /** @type {import('renovate').RenovateConfig} */
 module.exports = {
   platform: "github",
-  gitAuthor: gitAuthor,
+  ...(gitAuthor ? { gitAuthor } : {}),
   onboarding:
     process.env.RENOVATE_ONBOARDING !== undefined
       ? process.env.RENOVATE_ONBOARDING === "true"

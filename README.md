@@ -98,27 +98,26 @@ Renovate requires authentication to scan repositories and open pull requests. Yo
 
 ### Option A: GitHub App (Recommended)
 
-GitHub Apps have higher API rate limits (15,000 req/hr) and pull requests opened by a GitHub App can trigger downstream GitHub Actions workflows (such as CI checks and tests).
+GitHub Apps have higher API rate limits (15,000 req/hr), and pull requests opened by a GitHub App automatically trigger downstream GitHub Actions CI workflows. Additionally, Renovate automatically detects and attributes commits to your GitHub App bot user.
 
-1. Create a GitHub App in your personal settings:
-   - **Permissions**:
-     - `Contents`: Read & write
-     - `Pull requests`: Read & write
-     - `Issues`: Read & write
-     - `Workflows`: Read & write
-     - `Metadata`: Read-only
-2. Install the app on your account (with access to "All repositories" or selected ones).
-3. Add the following secrets to this `renovate` repository (**Settings** → **Secrets and variables** → **Actions**):
-   - `RENOVATE_APP_ID`: The App ID.
-   - `RENOVATE_APP_PRIVATE_KEY`: The generated `.pem` private key.
+You can provide either:
+- **App Credentials (Generated at runtime):**
+  - `RENOVATE_APP_ID` (or `APP_ID`)
+  - `RENOVATE_APP_PRIVATE_KEY` (or `APP_PRIVATE_KEY`)
+  - The workflow automatically mints a short-lived installation token using `actions/create-github-app-token`.
+- **Pre-generated App Installation Token:**
+  - `APP_TOKEN`: If you already generate or manage an installation token.
+
+**GitHub App Permissions Required:**
+- `Contents`: Read & write
+- `Pull requests`: Read & write
+- `Issues`: Read & write
+- `Workflows`: Read & write
+- `Metadata`: Read-only
 
 ### Option B: Personal Access Token (PAT)
 
-1. Generate a classic PAT or fine-grained PAT with:
-   - `repo` (full control)
-   - `workflow`
-2. Add the secret to this repository:
-   - `RENOVATE_TOKEN`: The PAT value.
+- `RENOVATE_TOKEN`: Personal Access Token with `repo` and `workflow` scopes.
 
 ### Optional Secrets:
 - `DOCKER_USERNAME` / `DOCKER_TOKEN`: Docker Hub credentials to avoid Docker pull rate limits.
