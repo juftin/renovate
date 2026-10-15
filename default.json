@@ -15,28 +15,28 @@
     {
       "description": "Semantic commit prefix for major updates",
       "matchUpdateTypes": ["major"],
-      "semanticCommitType": "💥",
+      "semanticCommitType": "💥 ",
       "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
       "labels": ["type/major"]
     },
     {
       "description": "Semantic commit prefix for minor updates",
       "matchUpdateTypes": ["minor"],
-      "semanticCommitType": "✨",
+      "semanticCommitType": "✨ ",
       "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
       "labels": ["type/minor"]
     },
     {
       "description": "Semantic commit prefix for patch updates",
       "matchUpdateTypes": ["patch"],
-      "semanticCommitType": "🐛",
+      "semanticCommitType": "🐛 ",
       "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
       "labels": ["type/patch"]
     },
     {
       "description": "Semantic commit prefix for digest updates",
       "matchUpdateTypes": ["digest"],
-      "semanticCommitType": "📌",
+      "semanticCommitType": "📌 ",
       "commitMessageExtra": "( {{currentDigestShort}} → {{newDigestShort}} )",
       "labels": ["type/digest"]
     },
@@ -57,7 +57,7 @@
     {
       "description": "Label and scope GitHub Actions dependencies",
       "matchManagers": ["github-actions"],
-      "semanticCommitType": "👷",
+      "semanticCommitType": "👷 ",
       "semanticCommitScope": "github-action",
       "commitMessageTopic": "action {{depName}}",
       "addLabels": ["renovate/github-action"]

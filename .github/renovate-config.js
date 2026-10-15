@@ -38,6 +38,8 @@ module.exports = {
     process.env.RENOVATE_ONBOARDING !== undefined
       ? process.env.RENOVATE_ONBOARDING === "true"
       : true,
+  onboardingPrTitle: "👷 configure renovate",
+  onboardingCommitMessage: "👷 configure renovate",
   requireConfig: process.env.RENOVATE_REQUIRE_CONFIG || "optional",
   onboardingConfig: {
     extends: ["config:recommended", "github>juftin/renovate"],
