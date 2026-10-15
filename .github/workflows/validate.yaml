@@ -32,6 +32,8 @@ jobs:
             conventional.json \
             .renovaterc.json5 \
             .github/renovate-config.js
+      - name: Check commit style defaults and overrides
+        run: node --test .github/renovate-config.test.cjs
   actionlint:
     name: actionlint
     runs-on: ubuntu-latest

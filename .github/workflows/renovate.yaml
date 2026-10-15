@@ -101,8 +101,9 @@ jobs:
           RENOVATE_REPOSITORY_CACHE: ${{ github.event.inputs.repo_cache || 'enabled' }}
           RENOVATE_AUTODISCOVER_FILTER: ${{ vars.RENOVATE_AUTODISCOVER_FILTER || format('["{0}/*"]', github.repository_owner) }}
           RENOVATE_CONFIG_PRESET: ${{ vars.RENOVATE_CONFIG_PRESET || format('github>{0}', github.repository) }}
+          RENOVATE_COMMIT_STYLE: ${{ vars.RENOVATE_COMMIT_STYLE || '' }}
           RENOVATE_AUTODISCOVER_TOPICS: ${{ vars.RENOVATE_AUTODISCOVER_TOPICS || '["renovate"]' }}
-          RENOVATE_EXTENDS: ${{ vars.RENOVATE_EXTENDS || format('["{0}"]', vars.RENOVATE_CONFIG_PRESET || format('github>{0}', github.repository)) }}
+          RENOVATE_EXTENDS: ${{ vars.RENOVATE_EXTENDS || '' }}
           RENOVATE_DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           RENOVATE_DOCKER_PASSWORD: ${{ secrets.DOCKER_TOKEN }}
       - name: Save Renovate cache
