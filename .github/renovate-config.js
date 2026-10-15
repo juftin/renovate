@@ -54,6 +54,16 @@ const defaultOnboardingCommitMessage = isConventional
   ? "chore: configure renovate"
   : "👷 configure renovate";
 
+let globalExtends = defaultPreset ? [defaultPreset] : [];
+if (process.env.RENOVATE_GLOBAL_EXTENDS) {
+  try {
+    const parsed = JSON.parse(process.env.RENOVATE_GLOBAL_EXTENDS);
+    globalExtends = Array.isArray(parsed) ? parsed : [parsed];
+  } catch {
+    globalExtends = [process.env.RENOVATE_GLOBAL_EXTENDS];
+  }
+}
+
 // Format JSON output from Renovate's JSONWriter to match Prettier conventions
 // (single-line arrays when within standard line length limits)
 try {
@@ -218,6 +228,13 @@ module.exports = {
     process.env.RENOVATE_ONBOARDING_COMMIT_MESSAGE ||
     defaultOnboardingCommitMessage,
   requireConfig: process.env.RENOVATE_REQUIRE_CONFIG || "optional",
+  dependencyDashboard:
+    process.env.RENOVATE_DEPENDENCY_DASHBOARD !== undefined
+      ? process.env.RENOVATE_DEPENDENCY_DASHBOARD === "true"
+      : true,
+  dependencyDashboardTitle:
+    process.env.RENOVATE_DEPENDENCY_DASHBOARD_TITLE || "Renovate Dashboard 🤖",
+  globalExtends: globalExtends,
   onboardingConfig: {
     $schema: "https://docs.renovatebot.com/renovate-schema.json",
     extends: [

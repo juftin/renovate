@@ -178,7 +178,8 @@ This repository serves as a **Shareable Config Preset** host. Repositories can r
 > **GitMoji by Default**: This repository is configured to **always use GitMoji** for all commit messages and pull request titles across both this runner and all onboarded downstream repositories:
 > - **Onboarding Pull Requests:** Titled **`👷 configure renovate`** with commit message **`👷 configure renovate`**.
 > - **Downstream Dependency Updates:** Formatted with [GitMoji](https://gitmoji.dev/) prefixes (`💥 `, `✨ `, `🐛 `, `📌 `, `👷 `, `🔒 `).
-> - **Automatic Downstream Application:** When downstream repositories are onboarded, Renovate generates a `renovate.json` that extends `"github><owner>/<repo>"`, automatically inheriting all GitMoji rules from [`gitmoji.json`](gitmoji.json).
+> - **Dependency Dashboard:** Maintained across all discovered downstream repositories as an issue titled **`Renovate Dashboard 🤖`**.
+> - **Automatic Downstream Application:** Downstream repositories inherit these rules either globally via the runner's `globalExtends` or by extending `"github><owner>/<repo>"` in their configuration.
 
 ---
 
@@ -189,7 +190,7 @@ This repository serves as a **Shareable Config Preset** host. Repositories can r
 Features:
 - Extends `config:recommended`, `docker:enableMajor`, and `helpers:pinGitHubActionDigests`.
 - Enables the Dependency Dashboard (`Renovate Dashboard 🤖`).
-- Uses Gitmoji commits by default (via [`gitmoji.json`](gitmoji.json)).
+- Uses Gitmoji commits by default (inlined semantic commit rules with GitMoji prefixes).
 - Structured PR labels (`renovate/container`, `renovate/github-action`, `renovate/helm`, `renovate/mise`, `renovate/pre-commit`, `renovate/python`, etc.).
 - Custom regex managers to detect dependencies annotated with `# renovate: datasource=... depName=...`.
 - Support for `oci://` image strings.
@@ -333,6 +334,9 @@ Configure these under **Settings → Secrets and variables → Actions → Varia
 | `RENOVATE_SEMANTIC_COMMITS` | Semantic commit mode across all repositories (`enabled`, `auto`, `disabled`) | `enabled` |
 | `RENOVATE_ONBOARDING_PR_TITLE` | Custom title for onboarding pull requests | `👷 configure renovate` |
 | `RENOVATE_ONBOARDING_COMMIT_MESSAGE` | Custom commit message for onboarding commits | `👷 configure renovate` |
+| `RENOVATE_GLOBAL_EXTENDS` | Presets extended across all discovered repositories | `["github><owner>/<repo>"]` |
+| `RENOVATE_DEPENDENCY_DASHBOARD` | Enable Dependency Dashboard issue on all repositories (`true`/`false`) | `true` |
+| `RENOVATE_DEPENDENCY_DASHBOARD_TITLE` | Issue title for the Dependency Dashboard | `Renovate Dashboard 🤖` |
 
 > [!TIP]
 > **Prettier & Pre-commit Compatibility**: The runner automatically formats onboarding configuration files (`renovate.json`) to adhere to Prettier's single-line array conventions so that CI checks and pre-commit hooks pass without modification. If you prefer using `.renovaterc.json5` or another file format for onboarding, set `RENOVATE_ONBOARDING_CONFIG_FILE_NAME` in repository variables.
