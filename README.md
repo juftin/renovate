@@ -156,7 +156,7 @@ gh run watch --repo <owner>/<repo>
 3. Click **Run workflow**, choose `dry_run: full`, and click **Run workflow**.
 4. Check the workflow run logs to verify Renovate discovered your tagged repositories.
 
-Once the dry run succeeds, trigger the workflow with `dry_run: null` (default) or wait for the automatic scheduled run. Renovate will open a **`👷 configure renovate`** onboarding pull request on each discovered repository!
+Once the dry run succeeds, trigger the workflow with `dry_run: null` (default) or wait for the automatic scheduled run. Renovate will immediately start managing your tagged repositories, create the **`Renovate Dashboard 🤖`** issue, and open pull requests formatted with GitMoji titles!
 
 ---
 
@@ -176,9 +176,10 @@ This repository serves as a **Shareable Config Preset** host. Repositories can r
 
 > [!IMPORTANT]
 > **GitMoji by Default**: This repository is configured to **always use GitMoji** for all commit messages and pull request titles across both this runner and all onboarded downstream repositories:
-> - **Onboarding Pull Requests:** Titled **`👷 configure renovate`** with commit message **`👷 configure renovate`**.
-> - **Downstream Dependency Updates:** Formatted with [GitMoji](https://gitmoji.dev/) prefixes (`💥 `, `✨ `, `🐛 `, `📌 `, `👷 `, `🔒 `).
+> - **Zero-Touch Management:** Downstream repositories tagged with `renovate` are automatically managed with the runner's presets—no onboarding PR or local config file required.
 > - **Dependency Dashboard:** Maintained across all discovered downstream repositories as an issue titled **`Renovate Dashboard 🤖`**.
+> - **Downstream Dependency Updates:** Formatted with [GitMoji](https://gitmoji.dev/) prefixes (`💥 `, `✨ `, `🐛 `, `📌 `, `👷 `, `🔒 `).
+> - **Onboarding Pull Requests (Optional):** If onboarding PRs are desired, set `RENOVATE_ONBOARDING: 'true'`. PRs are titled **`👷 configure renovate`** with commit message **`👷 configure renovate`**.
 > - **Automatic Downstream Application:** Downstream repositories inherit these rules either globally via the runner's `globalExtends` or by extending `"github><owner>/<repo>"` in their configuration.
 
 ---
