@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Safe automerge rules preset for juftin repositories",
+  "description": "Safe automerge rules preset",
   "packageRules": [
     {
       "description": "Auto-merge GitHub Actions updates after 3 days",

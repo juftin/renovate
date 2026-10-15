@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       repository:
-        description: "Target repository (e.g. juftin/camply). Leave blank to autodiscover all repos with the topic."
+        description: "Target repository (e.g. owner/repo). Leave blank to autodiscover all repos with the topic."
         required: false
         type: string
       dry_run:
@@ -48,6 +48,8 @@ on:
       - .renovaterc.json5
       - default.json
       - automerge.json
+      - gitmoji.json
+      - conventional.json
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.inputs.repository || 'autodiscover' }}
   cancel-in-progress: false
@@ -98,6 +100,8 @@ jobs:
           RENOVATE_REPOSITORY: ${{ github.event.inputs.repository || '' }}
           RENOVATE_REPOSITORY_CACHE: ${{ github.event.inputs.repo_cache || 'enabled' }}
           RENOVATE_AUTODISCOVER_FILTER: ${{ vars.RENOVATE_AUTODISCOVER_FILTER || format('["{0}/*"]', github.repository_owner) }}
+          RENOVATE_CONFIG_PRESET: ${{ vars.RENOVATE_CONFIG_PRESET || format('github>{0}', github.repository) }}
+          RENOVATE_ONBOARDING_CONFIG_FILE_NAME: ${{ vars.RENOVATE_ONBOARDING_CONFIG_FILE_NAME || '' }}
           RENOVATE_DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           RENOVATE_DOCKER_PASSWORD: ${{ secrets.DOCKER_TOKEN }}
       - name: Save Renovate cache
