@@ -139,6 +139,58 @@ Add the following secrets under **Settings** → **Secrets and variables** → *
 
 *(Alternatively, if you manage an external installation token, you can pass it via `APP_TOKEN`)*.
 
+---
+
+### 💻 Fast-Track: Setup with `gh` CLI
+
+You can complete the entire setup directly from your terminal using the GitHub CLI:
+
+#### 1. Create the GitHub App via `gh`
+Using the `gh-app-create` extension, which uses GitHub's App manifest flow to pre-fill all permissions:
+
+```bash
+# Install the extension
+gh extension install kennyg/gh-app-create
+
+# Create the app with required permissions and download the private key
+gh app-create \
+  --name "juftin-renovate" \
+  --url "https://github.com/juftin/renovate" \
+  --permissions "contents:write,pull_requests:write,issues:write,workflows:write,metadata:read" \
+  --key-out private-key.pem
+```
+
+#### 2. Install the App on Your Account
+Follow the installation link printed in your terminal (or visit `https://github.com/settings/apps/<app-name>/installations`) and select **All repositories**.
+
+#### 3. Set Repository Secrets with `gh secret set`
+```bash
+# Set the numeric App ID
+gh secret set APP_ID --repo juftin/renovate --body "<YOUR_APP_ID>"
+
+# Set the private key from the downloaded .pem file
+gh secret set APP_PRIVATE_KEY --repo juftin/renovate < private-key.pem
+
+# Clean up local private key file
+rm private-key.pem
+```
+
+#### 4. Tag Consumer Repositories with `gh repo edit`
+```bash
+# Add the renovate topic to any repo you want monitored
+gh repo edit juftin/camply --add-topic renovate
+gh repo edit juftin/browsr --add-topic renovate
+```
+
+#### 5. Trigger & Inspect Runs with `gh workflow run`
+```bash
+# Run a dry-run test
+gh workflow run renovate.yaml --repo juftin/renovate -f dry_run=full
+
+# Watch the run in your terminal
+gh run watch --repo juftin/renovate
+```
+
 ### Option B: Personal Access Token (PAT)
 
 - `RENOVATE_TOKEN`: Personal Access Token with `repo` and `workflow` scopes.
