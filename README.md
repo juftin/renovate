@@ -100,20 +100,44 @@ Renovate requires authentication to scan repositories and open pull requests. Yo
 
 GitHub Apps have higher API rate limits (15,000 req/hr), and pull requests opened by a GitHub App automatically trigger downstream GitHub Actions CI workflows. Additionally, Renovate automatically detects and attributes commits to your GitHub App bot user.
 
-You can provide either:
-- **App Credentials (Generated at runtime):**
-  - `RENOVATE_APP_ID` (or `APP_ID`)
-  - `RENOVATE_APP_PRIVATE_KEY` (or `APP_PRIVATE_KEY`)
-  - The workflow automatically mints a short-lived installation token using `actions/create-github-app-token`.
-- **Pre-generated App Installation Token:**
-  - `APP_TOKEN`: If you already generate or manage an installation token.
+The workflow uses **`actions/create-github-app-token`** to dynamically generate a short-lived token per run.
 
-**GitHub App Permissions Required:**
-- `Contents`: Read & write
-- `Pull requests`: Read & write
-- `Issues`: Read & write
-- `Workflows`: Read & write
-- `Metadata`: Read-only
+#### 1. Create the GitHub App
+1. Go to **[GitHub Developer Settings → GitHub Apps → New GitHub App](https://github.com/settings/apps/new)**.
+2. Fill in basic details:
+   - **GitHub App name:** `juftin-renovate` (or your preferred name).
+   - **Homepage URL:** `https://github.com/juftin/renovate`
+3. Under **Webhook**:
+   - **Uncheck** "Active" (webhooks are not needed).
+4. Under **Permissions** → **Repository permissions**, select:
+   - `Contents`: **Read and write** *(to push update branches)*
+   - `Pull requests`: **Read and write** *(to open & manage PRs)*
+   - `Issues`: **Read and write** *(to maintain the Dependency Dashboard)*
+   - `Workflows`: **Read and write** *(to update workflow files in `.github/workflows/`)*
+   - `Metadata`: **Read-only** *(selected automatically)*
+5. Under **Where can this GitHub App be installed?**:
+   - Choose **Only on this account**.
+6. Click **Create GitHub App**.
+
+#### 2. Generate Private Key & Note App ID
+1. On the app's **General** settings page, copy the numeric **App ID** near the top.
+2. Scroll to the **Private keys** section and click **Generate a private key** (downloads a `.pem` file).
+
+#### 3. Install the App on Your Account
+1. From the app's left sidebar, click **Install App**.
+2. Click **Install** next to your account (`juftin`).
+3. Select **All repositories** so any repo tagged with `renovate` is automatically accessible.
+4. Click **Install**.
+
+#### 4. Configure Secrets in `juftin/renovate`
+Add the following secrets under **Settings** → **Secrets and variables** → **Actions**:
+
+| Secret Name | Value |
+|---|---|
+| `APP_ID` (or `RENOVATE_APP_ID`) | Numeric App ID from Step 2 |
+| `APP_PRIVATE_KEY` (or `RENOVATE_APP_PRIVATE_KEY`) | Full text of the `.pem` file (including `BEGIN`/`END RSA PRIVATE KEY`) |
+
+*(Alternatively, if you manage an external installation token, you can pass it via `APP_TOKEN`)*.
 
 ### Option B: Personal Access Token (PAT)
 
