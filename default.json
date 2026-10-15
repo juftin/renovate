@@ -7,59 +7,172 @@
     "helpers:pinGitHubActionDigests",
     ":dependencyDashboard",
     ":disableRateLimiting",
-    "./gitmoji"
+    ":semanticCommits"
   ],
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
   "packageRules": [
     {
+      "description": "Gitmoji commit prefix for major updates",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "semanticCommitType": "💥 ",
+      "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
+      "labels": [
+        "type/major"
+      ]
+    },
+    {
+      "description": "Gitmoji commit prefix for minor updates",
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "semanticCommitType": "✨ ",
+      "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
+      "labels": [
+        "type/minor"
+      ]
+    },
+    {
+      "description": "Gitmoji commit prefix for patch updates",
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "semanticCommitType": "🐛 ",
+      "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
+      "labels": [
+        "type/patch"
+      ]
+    },
+    {
+      "description": "Gitmoji commit prefix for digest updates",
+      "matchUpdateTypes": [
+        "digest",
+        "pinDigest"
+      ],
+      "semanticCommitType": "📌 ",
+      "commitMessageExtra": "( {{currentDigestShort}} → {{newDigestShort}} )",
+      "labels": [
+        "type/digest"
+      ]
+    },
+    {
+      "description": "Gitmoji commit prefix for pin updates",
+      "matchUpdateTypes": [
+        "pin"
+      ],
+      "semanticCommitType": "📌 ",
+      "commitMessageExtra": "( {{newVersion}} )",
+      "labels": [
+        "type/pin"
+      ]
+    },
+    {
+      "description": "Gitmoji commit prefix for lockfile maintenance",
+      "matchUpdateTypes": [
+        "lockFileMaintenance",
+        "lockfileUpdate"
+      ],
+      "semanticCommitType": "🔒 ",
+      "labels": [
+        "type/lockfile"
+      ]
+    },
+    {
+      "description": "Gitmoji commit prefix and scope for GitHub Actions",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "semanticCommitType": "👷 ",
+      "semanticCommitScope": "github-action",
+      "commitMessageTopic": "action {{depName}}"
+    },
+    {
+      "description": "Gitmoji commit prefix for bump and replacement updates",
+      "matchUpdateTypes": [
+        "bump",
+        "replacement",
+        "rollback"
+      ],
+      "semanticCommitType": "📌 "
+    },
+    {
       "description": "Label and scope Docker container dependencies",
-      "matchDatasources": ["docker"],
+      "matchDatasources": [
+        "docker"
+      ],
       "semanticCommitScope": "container",
       "commitMessageTopic": "image {{depName}}",
-      "addLabels": ["renovate/container"]
+      "addLabels": [
+        "renovate/container"
+      ]
     },
     {
       "description": "Label and scope Helm chart dependencies",
-      "matchDatasources": ["helm"],
+      "matchDatasources": [
+        "helm"
+      ],
       "semanticCommitScope": "helm",
       "commitMessageTopic": "chart {{depName}}",
-      "addLabels": ["renovate/helm"]
+      "addLabels": [
+        "renovate/helm"
+      ]
     },
     {
       "description": "Label and scope GitHub Actions dependencies",
-      "matchManagers": ["github-actions"],
+      "matchManagers": [
+        "github-actions"
+      ],
       "semanticCommitScope": "github-action",
       "commitMessageTopic": "action {{depName}}",
-      "addLabels": ["renovate/github-action"]
+      "addLabels": [
+        "renovate/github-action"
+      ]
     },
     {
       "description": "Label and scope GitHub Release dependencies",
-      "matchDatasources": ["github-releases"],
+      "matchDatasources": [
+        "github-releases"
+      ],
       "semanticCommitScope": "github-release",
       "commitMessageTopic": "release {{depName}}",
-      "addLabels": ["renovate/github-release"]
+      "addLabels": [
+        "renovate/github-release"
+      ]
     },
     {
       "description": "Label and scope Mise tool versions",
-      "matchManagers": ["mise"],
+      "matchManagers": [
+        "mise"
+      ],
       "semanticCommitScope": "mise",
       "commitMessageTopic": "tool {{depName}}",
-      "addLabels": ["renovate/mise"]
+      "addLabels": [
+        "renovate/mise"
+      ]
     },
     {
       "description": "Label and scope pre-commit hook updates",
-      "matchManagers": ["pre-commit"],
+      "matchManagers": [
+        "pre-commit"
+      ],
       "semanticCommitScope": "pre-commit",
       "commitMessageTopic": "hook {{depName}}",
-      "addLabels": ["renovate/pre-commit"]
+      "addLabels": [
+        "renovate/pre-commit"
+      ]
     },
     {
       "description": "Label and scope Python / PyPI packages",
-      "matchDatasources": ["pypi"],
+      "matchDatasources": [
+        "pypi"
+      ],
       "semanticCommitScope": "python",
       "commitMessageTopic": "package {{depName}}",
-      "addLabels": ["renovate/python"]
+      "addLabels": [
+        "renovate/python"
+      ]
     }
   ],
   "customManagers": [
