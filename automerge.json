@@ -6,7 +6,7 @@
       "description": "Auto-merge GitHub Actions updates after 3 days",
       "matchManagers": ["github-actions"],
       "automerge": true,
-      "automergeType": "branch",
+      "automergeType": "pr",
       "matchUpdateTypes": ["minor", "patch", "digest"],
       "minimumReleaseAge": "3 days",
       "ignoreTests": false
@@ -15,7 +15,7 @@
       "description": "Auto-merge pre-commit hook updates after 3 days",
       "matchManagers": ["pre-commit"],
       "automerge": true,
-      "automergeType": "branch",
+      "automergeType": "pr",
       "matchUpdateTypes": ["minor", "patch"],
       "minimumReleaseAge": "3 days",
       "ignoreTests": false
@@ -24,7 +24,7 @@
       "description": "Auto-merge Mise updates after 3 days",
       "matchManagers": ["mise"],
       "automerge": true,
-      "automergeType": "branch",
+      "automergeType": "pr",
       "matchUpdateTypes": ["minor", "patch", "digest"],
       "minimumReleaseAge": "3 days",
       "ignoreTests": false
