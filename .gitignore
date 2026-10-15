@@ -1,0 +1,14 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Node / NPM
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Renovate Cache & Temp
+/tmp/renovate/
+.cache/
+*.log
