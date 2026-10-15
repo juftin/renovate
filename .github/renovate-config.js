@@ -64,20 +64,6 @@ if (process.env.RENOVATE_GLOBAL_EXTENDS) {
   }
 }
 
-// Instrument global Error to print full stack trace on REPOSITORY_CHANGED
-if (!global._patchedForRenovateErrors) {
-  const OriginalError = global.Error;
-  global.Error = function (message, ...args) {
-    const err = new OriginalError(message, ...args);
-    if (message === "repository-changed") {
-      console.error("RENOVATE_ABORT_TRACE:\n" + (err.stack || message));
-    }
-    return err;
-  };
-  global.Error.prototype = OriginalError.prototype;
-  global._patchedForRenovateErrors = true;
-}
-
 // Format JSON output from Renovate's JSONWriter to match Prettier conventions
 // (single-line arrays when within standard line length limits)
 try {
