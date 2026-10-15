@@ -41,6 +41,19 @@ const defaultPreset =
       ? `github>${defaultOwner}/renovate`
       : null);
 
+const isConventional =
+  (process.env.RENOVATE_CONFIG_PRESET &&
+    process.env.RENOVATE_CONFIG_PRESET.includes("conventional")) ||
+  false;
+
+const defaultOnboardingPrTitle = isConventional
+  ? "chore: configure renovate"
+  : "👷 configure renovate";
+
+const defaultOnboardingCommitMessage = isConventional
+  ? "chore: configure renovate"
+  : "👷 configure renovate";
+
 // Format JSON output from Renovate's JSONWriter to match Prettier conventions
 // (single-line arrays when within standard line length limits)
 try {
@@ -90,6 +103,104 @@ try {
   // Graceful fallback if not running within Renovate execution context
 }
 
+// Ensure Gitmoji onboarding PR titles are not prepended with "chore: "
+// by Renovate's default getSemanticCommitPrTitle
+try {
+  const path = require("path");
+  const mainDir = require.main?.filename ? path.dirname(require.main.filename) : "";
+  const fs = require("fs");
+
+  let common;
+  const commonCandidate = path.join(mainDir, "workers/repository/onboarding/common.js");
+  if (fs.existsSync(commonCandidate)) {
+    common = require(commonCandidate);
+  }
+  if (!common) {
+    const commonKey = Object.keys(require.cache).find(
+      (k) =>
+        k.includes("workers/repository/onboarding/common") ||
+        k.includes("onboarding/common.js")
+    );
+    if (commonKey) {
+      common = require(commonKey);
+    }
+  }
+  if (
+    common &&
+    typeof common.getSemanticCommitPrTitle === "function" &&
+    !common.getSemanticCommitPrTitle._patchedForGitmoji
+  ) {
+    const originalGetSemanticCommitPrTitle = common.getSemanticCommitPrTitle;
+    common.getSemanticCommitPrTitle = function (config) {
+      if (
+        config.onboardingPrTitle &&
+        (/\p{Extended_Pictographic}/u.test(config.onboardingPrTitle) ||
+          /^[a-z]+(\([a-z0-9_-]+\))?:/u.test(config.onboardingPrTitle))
+      ) {
+        return config.onboardingPrTitle;
+      }
+      return originalGetSemanticCommitPrTitle.call(this, config);
+    };
+    common.getSemanticCommitPrTitle._patchedForGitmoji = true;
+  }
+
+  // Also patch platform APIs (e.g. GitHub) so createPr, updatePr, and getBranchPr
+  // strip accidental "chore: " prefix from gitmoji titles and repair existing onboarding PRs
+  let api;
+  const apiCandidate = path.join(mainDir, "modules/platform/api.js");
+  if (fs.existsSync(apiCandidate)) {
+    api = require(apiCandidate);
+  }
+  if (!api) {
+    const apiKey = Object.keys(require.cache).find((k) =>
+      k.includes("modules/platform/api")
+    );
+    if (apiKey) {
+      api = require(apiKey);
+    }
+  }
+  if (api && api.default) {
+    for (const [, platformApi] of api.default.entries()) {
+      if (platformApi && !platformApi._patchedForGitmoji) {
+        if (typeof platformApi.createPr === "function") {
+          const origCreatePr = platformApi.createPr;
+          platformApi.createPr = function (options) {
+            if (options && options.prTitle && options.prTitle.startsWith("chore: 👷")) {
+              options.prTitle = options.prTitle.replace(/^chore:\s*/, "");
+            }
+            return origCreatePr.call(this, options);
+          };
+        }
+        if (typeof platformApi.updatePr === "function") {
+          const origUpdatePr = platformApi.updatePr;
+          platformApi.updatePr = function (options) {
+            if (options && options.prTitle && options.prTitle.startsWith("chore: 👷")) {
+              options.prTitle = options.prTitle.replace(/^chore:\s*/, "");
+            }
+            return origUpdatePr.call(this, options);
+          };
+        }
+        if (typeof platformApi.getBranchPr === "function") {
+          const origGetBranchPr = platformApi.getBranchPr;
+          platformApi.getBranchPr = async function (branchName, ...args) {
+            const pr = await origGetBranchPr.call(this, branchName, ...args);
+            if (pr && pr.title && pr.title.startsWith("chore: 👷")) {
+              if (pr.bodyStruct) {
+                pr.bodyStruct.hash = null;
+              }
+              pr.title = pr.title.replace(/^chore:\s*/, "");
+            }
+            return pr;
+          };
+        }
+        platformApi._patchedForGitmoji = true;
+      }
+    }
+  }
+} catch {
+  // Graceful fallback if not running within Renovate execution context
+}
+
 /** @type {import('renovate').RenovateConfig} */
 module.exports = {
   platform: "github",
@@ -100,8 +211,11 @@ module.exports = {
       : true,
   onboardingConfigFileName:
     process.env.RENOVATE_ONBOARDING_CONFIG_FILE_NAME || "renovate.json",
-  onboardingPrTitle: "👷 configure renovate",
-  onboardingCommitMessage: "👷 configure renovate",
+  onboardingPrTitle:
+    process.env.RENOVATE_ONBOARDING_PR_TITLE || defaultOnboardingPrTitle,
+  onboardingCommitMessage:
+    process.env.RENOVATE_ONBOARDING_COMMIT_MESSAGE ||
+    defaultOnboardingCommitMessage,
   requireConfig: process.env.RENOVATE_REQUIRE_CONFIG || "optional",
   onboardingConfig: {
     $schema: "https://docs.renovatebot.com/renovate-schema.json",

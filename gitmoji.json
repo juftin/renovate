@@ -41,7 +41,8 @@
     {
       "description": "Gitmoji commit prefix for digest updates",
       "matchUpdateTypes": [
-        "digest"
+        "digest",
+        "pinDigest"
       ],
       "semanticCommitType": "📌 ",
       "commitMessageExtra": "( {{currentDigestShort}} → {{newDigestShort}} )",
@@ -63,7 +64,8 @@
     {
       "description": "Gitmoji commit prefix for lockfile maintenance",
       "matchUpdateTypes": [
-        "lockFileMaintenance"
+        "lockFileMaintenance",
+        "lockfileUpdate"
       ],
       "semanticCommitType": "🔒 ",
       "labels": [
