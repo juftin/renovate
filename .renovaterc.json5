@@ -1,0 +1,8 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  description: "Renovate configuration for the renovate repository itself",
+  extends: [
+    "local>default",
+    "local>automerge",
+  ],
+}
