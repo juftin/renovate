@@ -4,9 +4,15 @@ const gitAuthor =
   process.env.GIT_AUTHOR ||
   "github-actions[bot] <github-actions[bot]@users.noreply.github.com>";
 
-const targetRepo = process.env.RENOVATE_REPOSITORY;
+const targetRepo =
+  process.env.RENOVATE_REPOSITORY &&
+  process.env.RENOVATE_REPOSITORY.trim() !== ""
+    ? process.env.RENOVATE_REPOSITORY.trim()
+    : null;
 
-let autodiscoverFilter = ["juftin/*"];
+const defaultOwner = process.env.GITHUB_REPOSITORY_OWNER || "juftin";
+
+let autodiscoverFilter = [`${defaultOwner}/*`];
 if (process.env.RENOVATE_AUTODISCOVER_FILTER) {
   try {
     const parsed = JSON.parse(process.env.RENOVATE_AUTODISCOVER_FILTER);
