@@ -1,45 +1,17 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Default Renovate configuration preset for juftin repositories",
+  "description": "Default Renovate configuration preset",
   "extends": [
     "config:recommended",
     "docker:enableMajor",
     "helpers:pinGitHubActionDigests",
     ":dependencyDashboard",
     ":disableRateLimiting",
-    ":semanticCommits"
+    "./gitmoji"
   ],
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
   "packageRules": [
-    {
-      "description": "Semantic commit prefix for major updates",
-      "matchUpdateTypes": ["major"],
-      "semanticCommitType": "💥 ",
-      "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
-      "labels": ["type/major"]
-    },
-    {
-      "description": "Semantic commit prefix for minor updates",
-      "matchUpdateTypes": ["minor"],
-      "semanticCommitType": "✨ ",
-      "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
-      "labels": ["type/minor"]
-    },
-    {
-      "description": "Semantic commit prefix for patch updates",
-      "matchUpdateTypes": ["patch"],
-      "semanticCommitType": "🐛 ",
-      "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
-      "labels": ["type/patch"]
-    },
-    {
-      "description": "Semantic commit prefix for digest updates",
-      "matchUpdateTypes": ["digest"],
-      "semanticCommitType": "📌 ",
-      "commitMessageExtra": "( {{currentDigestShort}} → {{newDigestShort}} )",
-      "labels": ["type/digest"]
-    },
     {
       "description": "Label and scope Docker container dependencies",
       "matchDatasources": ["docker"],
@@ -57,7 +29,6 @@
     {
       "description": "Label and scope GitHub Actions dependencies",
       "matchManagers": ["github-actions"],
-      "semanticCommitType": "👷 ",
       "semanticCommitScope": "github-action",
       "commitMessageTopic": "action {{depName}}",
       "addLabels": ["renovate/github-action"]

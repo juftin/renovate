@@ -1,0 +1,83 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Conventional Commits semantic commit rules for Renovate",
+  "extends": [
+    ":semanticCommits"
+  ],
+  "packageRules": [
+    {
+      "description": "Conventional commit prefix for major updates",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "semanticCommitType": "feat",
+      "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
+      "labels": [
+        "type/major"
+      ]
+    },
+    {
+      "description": "Conventional commit prefix for minor updates",
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "semanticCommitType": "feat",
+      "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
+      "labels": [
+        "type/minor"
+      ]
+    },
+    {
+      "description": "Conventional commit prefix for patch updates",
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "semanticCommitType": "fix",
+      "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
+      "labels": [
+        "type/patch"
+      ]
+    },
+    {
+      "description": "Conventional commit prefix for digest updates",
+      "matchUpdateTypes": [
+        "digest"
+      ],
+      "semanticCommitType": "chore",
+      "commitMessageExtra": "( {{currentDigestShort}} → {{newDigestShort}} )",
+      "labels": [
+        "type/digest"
+      ]
+    },
+    {
+      "description": "Conventional commit prefix for pin updates",
+      "matchUpdateTypes": [
+        "pin"
+      ],
+      "semanticCommitType": "chore",
+      "commitMessageExtra": "( {{newVersion}} )",
+      "labels": [
+        "type/pin"
+      ]
+    },
+    {
+      "description": "Conventional commit prefix for lockfile maintenance",
+      "matchUpdateTypes": [
+        "lockFileMaintenance"
+      ],
+      "semanticCommitType": "chore",
+      "labels": [
+        "type/lockfile"
+      ]
+    },
+    {
+      "description": "Conventional commit prefix and scope for GitHub Actions",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "semanticCommitType": "ci",
+      "semanticCommitScope": "github-action",
+      "commitMessageTopic": "action {{depName}}"
+    }
+  ]
+}

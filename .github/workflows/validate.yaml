@@ -26,6 +26,8 @@ jobs:
           npx --yes --package renovate -- renovate-config-validator --strict \
             default.json \
             automerge.json \
+            gitmoji.json \
+            conventional.json \
             .renovaterc.json5 \
             .github/renovate-config.js
   actionlint:
