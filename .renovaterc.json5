@@ -1,85 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Renovate configuration for the renovate repository itself",
-  "extends": [
-    "config:recommended",
-    "docker:enableMajor",
-    "helpers:pinGitHubActionDigests",
-    ":dependencyDashboard",
-    ":disableRateLimiting",
-    ":semanticCommits"
-  ],
-  "dependencyDashboard": true,
-  "dependencyDashboardTitle": "Renovate Dashboard 🤖",
+  "description": "Inherits the runner's shared defaults; adds PR automerge for this repository",
   "packageRules": [
-    {
-      "description": "Semantic commit prefix for major updates",
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "semanticCommitType": "💥 ",
-      "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
-      "labels": [
-        "type/major"
-      ]
-    },
-    {
-      "description": "Semantic commit prefix for minor updates",
-      "matchUpdateTypes": [
-        "minor"
-      ],
-      "semanticCommitType": "✨ ",
-      "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
-      "labels": [
-        "type/minor"
-      ]
-    },
-    {
-      "description": "Semantic commit prefix for patch updates",
-      "matchUpdateTypes": [
-        "patch"
-      ],
-      "semanticCommitType": "🐛 ",
-      "commitMessageExtra": "( {{currentVersion}} → {{newVersion}} )",
-      "labels": [
-        "type/patch"
-      ]
-    },
-    {
-      "description": "Semantic commit prefix for digest updates",
-      "matchUpdateTypes": [
-        "digest",
-        "pinDigest"
-      ],
-      "semanticCommitType": "📌 ",
-      "commitMessageExtra": "( {{currentDigestShort}} → {{newDigestShort}} )",
-      "labels": [
-        "type/digest"
-      ]
-    },
-    {
-      "description": "Label and scope GitHub Actions dependencies",
-      "matchManagers": [
-        "github-actions"
-      ],
-      "semanticCommitType": "👷 ",
-      "semanticCommitScope": "github-action",
-      "commitMessageTopic": "action {{depName}}",
-      "addLabels": [
-        "renovate/github-action"
-      ]
-    },
-    {
-      "description": "Label and scope pre-commit hook updates",
-      "matchManagers": [
-        "pre-commit"
-      ],
-      "semanticCommitScope": "pre-commit",
-      "commitMessageTopic": "hook {{depName}}",
-      "addLabels": [
-        "renovate/pre-commit"
-      ]
-    },
     {
       "description": "Auto-merge GitHub Actions updates after 3 days",
       "matchManagers": [
@@ -108,23 +30,6 @@
       ],
       "minimumReleaseAge": "3 days",
       "ignoreTests": false
-    }
-  ],
-  "customManagers": [
-    {
-      "customType": "regex",
-      "description": "Process annotated dependencies (e.g., # renovate: datasource=... depName=...)",
-      "managerFilePatterns": [
-        "/(^|/).+\\.env(?:\\.j2)?$/",
-        "/(^|/).+\\.sh(?:\\.j2)?$/",
-        "/(^|/).+\\.ya?ml(?:\\.j2)?$/",
-        "/(^|/)Dockerfile.*$/"
-      ],
-      "matchStrings": [
-        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( repository=(?<registryUrl>\\S+))?\\n.+(:\\s|=)(&\\S+\\s)?(?<currentValue>\\S+)",
-        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n.+/(?<currentValue>(v|\\d)[^/]+)"
-      ],
-      "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}"
     }
   ]
 }
