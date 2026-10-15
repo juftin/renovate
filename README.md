@@ -61,74 +61,46 @@ Renovate requires GitHub credentials to discover repositories, inspect code, and
 
 GitHub Apps provide higher API rate limits (15,000 req/hr), enable downstream GitHub Actions to trigger on Renovate pull requests, and automatically attribute commits to your Renovate bot identity.
 
-You can set this up quickly using the GitHub CLI or manually through the web UI:
+##### 1. Create the GitHub App
+1. Go to **[Developer Settings → GitHub Apps → New GitHub App](https://github.com/settings/apps/new)**.
+   *(If deploying for an organization, navigate to `https://github.com/organizations/<your-org>/settings/apps/new`).*
+2. Fill in the basic details:
+   - **GitHub App name:** `<your-org>-renovate` (or your preferred bot name).
+   - **Homepage URL:** `https://github.com/<owner>/<repo>`
+3. Under **Webhook**:
+   - **Uncheck** "Active" (webhooks are not needed).
+4. Under **Repository permissions**, grant:
+   - `Contents`: **Read & write** *(to push update branches)*
+   - `Pull requests`: **Read & write** *(to create and update PRs)*
+   - `Issues`: **Read & write** *(to manage the Dependency Dashboard)*
+   - `Workflows`: **Read & write** *(to update workflow files in `.github/workflows/`)*
+   - `Metadata`: **Read-only** *(selected automatically)*
+5. Under **Where can this GitHub App be installed?**, select **Only on this account**.
+6. Click **Create GitHub App**.
 
-<details open>
-<summary><b>Fast-Track: Setup with <code>gh</code> CLI</b></summary>
+##### 2. Generate Private Key & Note App ID
+1. On the app's **General** settings page, copy the numeric **App ID** near the top.
+2. Scroll down to the **Private keys** section, click **Generate a private key**, and save the downloaded `.pem` file.
 
-Run the following commands in your terminal (replace `<owner>` and `<repo>` with your GitHub username/org and repository name):
+##### 3. Install the App
+1. From the app's left sidebar, click **Install App**.
+2. Click **Install** next to your account or organization.
+3. Choose **All repositories** (so any repo tagged with `renovate` is automatically accessible).
+4. Click **Install**.
 
+##### 4. Add Secrets to Your Runner Repository
+In your forked runner repository, navigate to **Settings → Secrets and variables → Actions → Secrets** and add:
+
+| Secret Name | Value |
+|---|---|
+| `APP_ID` | Numeric App ID from Step 2 |
+| `APP_PRIVATE_KEY` | Full contents of the downloaded `.pem` file (including `BEGIN`/`END RSA PRIVATE KEY` lines) |
+
+*(Tip: You can also set these secrets directly using the native GitHub CLI)*:
 ```bash
-# 1. Install the GitHub App creation CLI extension
-gh extension install kennyg/gh-app-create
-
-# 2. Create the GitHub App with the required permissions
-gh app-create \
-  --name "<owner>-renovate" \
-  --url "https://github.com/<owner>/<repo>" \
-  --permissions "contents:write,pull_requests:write,issues:write,workflows:write,metadata:read" \
-  --key-out private-key.pem
-
-# 3. Follow the installation link displayed in the output and install on "All repositories"
-
-# 4. Set secrets in your runner repository
 gh secret set APP_ID --repo <owner>/<repo> --body "<YOUR_APP_ID>"
 gh secret set APP_PRIVATE_KEY --repo <owner>/<repo> < private-key.pem
-
-# 5. Remove the local private key file
-rm private-key.pem
 ```
-
-</details>
-
-<details>
-<summary><b>Manual Setup: Via GitHub Web UI</b></summary>
-
-1. **Create the GitHub App:**
-   - Go to **[Developer Settings → GitHub Apps → New GitHub App](https://github.com/settings/apps/new)**.
-     *(If deploying for an organization, go to `https://github.com/organizations/<your-org>/settings/apps/new`).*
-   - Set **GitHub App name:** `<your-org>-renovate` (or your preferred name).
-   - Set **Homepage URL:** `https://github.com/<owner>/<repo>`
-   - Under **Webhook**: **Uncheck** "Active" (webhooks are not needed).
-   - Under **Repository permissions**, grant:
-     - `Contents`: **Read & write** *(to push update branches)*
-     - `Pull requests`: **Read & write** *(to create and update PRs)*
-     - `Issues`: **Read & write** *(to manage the Dependency Dashboard)*
-     - `Workflows`: **Read & write** *(to update workflow files in `.github/workflows/`)*
-     - `Metadata`: **Read-only** *(selected automatically)*
-   - Under **Where can this GitHub App be installed?**, select **Only on this account**.
-   - Click **Create GitHub App**.
-
-2. **Generate Private Key & Note App ID:**
-   - In the app's settings, copy the numeric **App ID**.
-   - Scroll down to the **Private keys** section, click **Generate a private key**, and save the downloaded `.pem` file.
-
-3. **Install the App:**
-   - In the left sidebar, click **Install App**.
-   - Click **Install** next to your account or organization.
-   - Choose **All repositories** (or select specific repositories).
-   - Click **Install**.
-
-4. **Add Secrets to Your Runner Repository:**
-   - In your forked `renovate` runner repository, go to **Settings → Secrets and variables → Actions**.
-   - Add the following repository secrets:
-
-     | Secret Name | Value |
-     |---|---|
-     | `APP_ID` | Numeric App ID from Step 2 |
-     | `APP_PRIVATE_KEY` | Full contents of the downloaded `.pem` file (including `BEGIN`/`END RSA PRIVATE KEY` lines) |
-
-</details>
 
 ---
 
