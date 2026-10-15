@@ -48,7 +48,8 @@
     {
       "description": "Semantic commit prefix for digest updates",
       "matchUpdateTypes": [
-        "digest"
+        "digest",
+        "pinDigest"
       ],
       "semanticCommitType": "📌 ",
       "commitMessageExtra": "( {{currentDigestShort}} → {{newDigestShort}} )",

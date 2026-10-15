@@ -41,7 +41,8 @@
     {
       "description": "Conventional commit prefix for digest updates",
       "matchUpdateTypes": [
-        "digest"
+        "digest",
+        "pinDigest"
       ],
       "semanticCommitType": "chore",
       "commitMessageExtra": "( {{currentDigestShort}} → {{newDigestShort}} )",
@@ -63,7 +64,8 @@
     {
       "description": "Conventional commit prefix for lockfile maintenance",
       "matchUpdateTypes": [
-        "lockFileMaintenance"
+        "lockFileMaintenance",
+        "lockfileUpdate"
       ],
       "semanticCommitType": "chore",
       "labels": [
@@ -78,6 +80,15 @@
       "semanticCommitType": "ci",
       "semanticCommitScope": "github-action",
       "commitMessageTopic": "action {{depName}}"
+    },
+    {
+      "description": "Conventional commit prefix for bump and replacement updates",
+      "matchUpdateTypes": [
+        "bump",
+        "replacement",
+        "rollback"
+      ],
+      "semanticCommitType": "chore"
     }
   ]
 }
