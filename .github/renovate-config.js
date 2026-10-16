@@ -37,7 +37,7 @@ module.exports = {
     : {
         autodiscover: true,
         autodiscoverFilter: owner ? [`${owner}/*`] : ["*/*"],
-        autodiscoverTopics: ["renovate"],
+        autodiscoverTopics: ["renovate-enabled"],
       }),
   hostRules:
     process.env.RENOVATE_DOCKER_USERNAME && process.env.RENOVATE_DOCKER_PASSWORD

@@ -83,7 +83,7 @@ test("style selection preserves targeted runs and discovery", () => {
   const discovery = config();
   assert.equal(discovery.autodiscover, true);
   assert.deepEqual(discovery.autodiscoverFilter, ["fork/*"]);
-  assert.deepEqual(discovery.autodiscoverTopics, ["renovate"]);
+  assert.deepEqual(discovery.autodiscoverTopics, ["renovate-enabled"]);
 });
 
 test("unknown commit styles fail with an actionable error", () => {

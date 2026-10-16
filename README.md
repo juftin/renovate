@@ -1,6 +1,6 @@
 # Renovate Runner
 
-Run [Renovate](https://docs.renovatebot.com/) on GitHub Actions for repositories with the **`renovate` topic**. Fork this repository, configure authentication, and tag the repositories you want to manage.
+Run [Renovate](https://docs.renovatebot.com/) on GitHub Actions for repositories with the **`renovate-enabled` topic**. Fork this repository, configure authentication, and tag the repositories you want to manage.
 
 Managed repositories get dependency PRs and a **Renovate Dashboard 🤖** issue without needing their own workflow or Renovate config. **Conventional Commits are the default**; GitMoji is an optional override.
 
@@ -8,7 +8,7 @@ Managed repositories get dependency PRs and a **Renovate Dashboard 🤖** issue 
 
 1. **Fork and enable Actions.** Open the fork's **Actions** tab and enable workflows. The runner detects its owner and repository name automatically.
 2. **Configure a GitHub App.** [Create an app](https://github.com/settings/apps/new), disable its webhook, and install it on the repositories you want to manage, including the runner. Add `APP_ID` and `APP_PRIVATE_KEY` as repository secrets under **Settings → Secrets and variables → Actions**.
-3. **Tag your repositories.** Add the `renovate` topic in each repository's **About → Settings**. Enable Issues for dashboards. Tag the runner too if it should update itself.
+3. **Tag your repositories.** Add the `renovate-enabled` topic in each repository's **About → Settings**. Enable Issues for dashboards. Tag the runner too if it should update itself.
 4. **Verify and run.** Open **Actions → renovate → Run workflow**, choose `dry_run: full`, and check the logs for discovered repositories. Then run with `dry_run: null` to create updates and dashboards. Scheduled runs happen every 30 minutes.
 
 <details>
@@ -48,7 +48,7 @@ The token must have access to all managed repositories. The built-in `github.tok
 ```bash
 gh secret set APP_ID --repo <owner>/<runner-repo>
 gh secret set APP_PRIVATE_KEY --repo <owner>/<runner-repo> < private-key.pem
-gh repo edit <owner>/<target-repo> --add-topic renovate
+gh repo edit <owner>/<target-repo> --add-topic renovate-enabled
 gh workflow run renovate.yaml --repo <owner>/<runner-repo> -f dry_run=full
 gh run watch --repo <owner>/<runner-repo>
 ```
@@ -131,7 +131,7 @@ These **Actions variables** are forwarded by the [workflow](.github/workflows/re
 | `RENOVATE_COMMIT_STYLE` | `conventional` | `conventional` or `gitmoji` |
 | `RENOVATE_AUTODISCOVER_FILTER` | `["<owner>/*"]` | Repository name pattern or JSON array of patterns |
 | `RENOVATE_CONFIG_PRESET` | `github><owner>/<runner-repo>` | Base preset; the selected style is appended |
-| `RENOVATE_AUTODISCOVER_TOPICS` | `["renovate"]` | Discover repositories matching these topics; JSON array |
+| `RENOVATE_AUTODISCOVER_TOPICS` | `["renovate-enabled"]` | Discover repositories matching these topics; JSON array |
 | `RENOVATE_EXTENDS` | Base and selected style presets | Override the full preset list; JSON array in precedence order |
 
 For compatibility, a `RENOVATE_CONFIG_PRESET` ending in `:gitmoji` selects GitMoji when `RENOVATE_COMMIT_STYLE` is unset. Prefer the style variable with the default base preset to retain all shared settings.
