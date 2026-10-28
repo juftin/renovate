@@ -75,12 +75,30 @@ The style preset is applied after the base preset, preserving its managers, labe
 
 | Preset | Reference | Includes |
 |---|---|---|
-| [Default](default.json) | `github><owner>/<repo>` | Conventional Commits, dashboard, labels and scopes, Docker major updates, GitHub Actions digest pinning, annotated dependencies and OCI images |
+| [Default](default.json) | `github><owner>/<repo>` | Conventional Commits, 7-day cool-down period with strict checks, weekly lockfile maintenance, dashboard, labels and scopes, Docker major updates, GitHub Actions digest pinning, annotated dependencies and OCI images |
 | [GitMoji](gitmoji.json) | `github><owner>/<repo>:gitmoji` | Commit style rules: 💥 major, ✨ minor, 🐛 patch, 📌 pins/digests, 👷 Actions, 🔒 lockfiles |
 | [Conventional](conventional.json) | `github><owner>/<repo>:conventional` | Commit style rules: `feat`, `fix`, `chore`, `ci` |
-| [Automerge](automerge.json) | `github><owner>/<repo>:automerge` | PR automerge for selected Actions, pre-commit, and Mise updates after three days with passing checks |
+| [Automerge](automerge.json) | `github><owner>/<repo>:automerge` | PR automerge for selected Actions, pre-commit, and Mise updates after 14 days with passing checks |
 
 Edit the preset files to customize shared settings. The runner applies them automatically; automerge is opt-in for downstream repositories. The runner's own [config](.renovaterc.json5) adds automerge for selected Actions and pre-commit updates and inherits the selected commit style.
+
+<details>
+<summary>Dependency cool-down and lockfile guidance</summary>
+
+The default preset enforces a **7-day cool-down period** (`minimumReleaseAge: "7 days"`) with strict release-age checks (`internalChecksFilter: "strict"`) and required release timestamps (`minimumReleaseAgeBehaviour: "timestamp-required"`). During this window, updates remain pending and visible under the Dependency Dashboard before PRs are created.
+
+Automerging requires a **14-day cool-down** (`minimumReleaseAge: "14 days"`). Security and vulnerability fixes are exempt from cool-downs (`minimumReleaseAge: null`, `automerge: false`) for immediate manual review.
+
+### uv and lockfiles
+
+Renovate's native `pep621` manager handles `pyproject.toml` and existing `uv.lock` files together. Weekly lockfile maintenance runs before 04:00 UTC on Mondays without release-age gates. Downstream projects using uv can configure matching client-side cutoffs in `pyproject.toml`:
+
+```toml
+[tool.uv]
+exclude-newer = "7 days"
+```
+
+</details>
 
 <details>
 <summary>Use presets with another Renovate instance</summary>

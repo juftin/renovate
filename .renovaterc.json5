@@ -3,7 +3,7 @@
   "description": "Inherits the runner's shared defaults; adds PR automerge for this repository",
   "packageRules": [
     {
-      "description": "Auto-merge GitHub Actions updates after 3 days",
+      "description": "Auto-merge GitHub Actions updates after 14 days",
       "matchManagers": [
         "github-actions"
       ],
@@ -14,11 +14,11 @@
         "patch",
         "digest"
       ],
-      "minimumReleaseAge": "3 days",
+      "minimumReleaseAge": "14 days",
       "ignoreTests": false
     },
     {
-      "description": "Auto-merge pre-commit hook updates after 3 days",
+      "description": "Auto-merge pre-commit hook updates after 14 days",
       "matchManagers": [
         "pre-commit"
       ],
@@ -28,7 +28,7 @@
         "minor",
         "patch"
       ],
-      "minimumReleaseAge": "3 days",
+      "minimumReleaseAge": "14 days",
       "ignoreTests": false
     }
   ]
