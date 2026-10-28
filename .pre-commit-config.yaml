@@ -12,6 +12,6 @@ repos:
       - id: mixed-line-ending
       - id: no-commit-to-branch
   - repo: https://github.com/google/yamlfmt
-    rev: v0.17.2
+    rev: v0.21.0
     hooks:
       - id: yamlfmt
