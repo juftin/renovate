@@ -1,32 +1,38 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": "Safe automerge rules preset",
+  "internalChecksFilter": "strict",
+  "minimumReleaseAgeBehaviour": "timestamp-required",
+  "vulnerabilityAlerts": {
+    "minimumReleaseAge": null,
+    "automerge": false
+  },
   "packageRules": [
     {
-      "description": "Auto-merge GitHub Actions updates after 3 days",
+      "description": "Auto-merge GitHub Actions updates after 14 days",
       "matchManagers": ["github-actions"],
       "automerge": true,
       "automergeType": "pr",
       "matchUpdateTypes": ["minor", "patch", "digest"],
-      "minimumReleaseAge": "3 days",
+      "minimumReleaseAge": "14 days",
       "ignoreTests": false
     },
     {
-      "description": "Auto-merge pre-commit hook updates after 3 days",
+      "description": "Auto-merge pre-commit hook updates after 14 days",
       "matchManagers": ["pre-commit"],
       "automerge": true,
       "automergeType": "pr",
       "matchUpdateTypes": ["minor", "patch"],
-      "minimumReleaseAge": "3 days",
+      "minimumReleaseAge": "14 days",
       "ignoreTests": false
     },
     {
-      "description": "Auto-merge Mise updates after 3 days",
+      "description": "Auto-merge Mise updates after 14 days",
       "matchManagers": ["mise"],
       "automerge": true,
       "automergeType": "pr",
       "matchUpdateTypes": ["minor", "patch", "digest"],
-      "minimumReleaseAge": "3 days",
+      "minimumReleaseAge": "14 days",
       "ignoreTests": false
     }
   ]

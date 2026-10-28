@@ -4,6 +4,10 @@
   "extends": [
     "config:recommended",
     "docker:enableMajor",
+    "docker:pinDigests",
+    ":configMigration",
+    ":pinDevDependencies",
+    ":enablePreCommit",
     "helpers:pinGitHubActionDigests",
     ":dependencyDashboard",
     ":disableRateLimiting",
@@ -173,6 +177,23 @@
       "addLabels": [
         "renovate/python"
       ]
+    },
+    {
+      "description": "Keep pinning, recovery, and package-manager-controlled updates reviewable without unsupported release-age checks",
+      "matchUpdateTypes": [
+        "pin",
+        "pinDigest",
+        "lockFileMaintenance",
+        "lockfileUpdate",
+        "bump",
+        "replacement",
+        "rollback"
+      ],
+      "minimumReleaseAge": null,
+      "automerge": false,
+      "prBodyNotes": [
+        "Release-age checks do not cover this update. Review pinning and recovery changes manually; configure the package manager cooldown for lockfile resolutions (for uv: [tool.uv] exclude-newer = \"7 days\")."
+      ]
     }
   ],
   "customManagers": [
@@ -202,5 +223,20 @@
       ],
       "datasourceTemplate": "docker"
     }
-  ]
+  ],
+  "internalChecksFilter": "strict",
+  "minimumReleaseAge": "7 days",
+  "minimumReleaseAgeBehaviour": "timestamp-required",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "before 4am on monday"
+    ],
+    "automerge": false
+  },
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "minimumReleaseAge": null,
+    "automerge": false
+  }
 }
