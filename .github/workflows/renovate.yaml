@@ -95,7 +95,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token || secrets.APP_TOKEN || secrets.RENOVATE_TOKEN }}
           configurationFile: .github/renovate-config.js
           # renovate: datasource=github-releases depName=renovatebot/renovate
-          renovate-version: 44.164.6
+          renovate-version: 44.181.3
         env:
           LOG_LEVEL: ${{ github.event.inputs.log_level || 'info' }}
           RENOVATE_DRY_RUN: ${{ github.event.inputs.dry_run != 'null' && github.event.inputs.dry_run || '' }}

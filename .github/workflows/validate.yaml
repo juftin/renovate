@@ -26,7 +26,7 @@ jobs:
       - name: Validate Renovate configuration files
         run: |
           # renovate: datasource=github-releases depName=renovatebot/renovate
-          RENOVATE_VERSION=44.164.6
+          RENOVATE_VERSION=44.181.3
           npx --yes --package "renovate@${RENOVATE_VERSION}" -- renovate-config-validator --strict \
             default.json \
             automerge.json \
