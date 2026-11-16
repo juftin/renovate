@@ -27,7 +27,7 @@
 
 - [x] T010 Run strict validation, native/uv/style tests, actionlint and all pre-commit hooks; record evidence in quickstart.md.
 - [x] T011 Inspect current code against all requirements and report convergence.
-- [ ] T012 Commit and push the branch; open a PR with full-SHA spec links and live-control findings; inspect available CI evidence.
+- [x] T012 Commit and push the branch; open a PR with full-SHA spec links and live-control findings; inspect available CI evidence.
 
 ## Dependencies and Execution
 
