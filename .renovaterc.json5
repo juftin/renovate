@@ -15,7 +15,10 @@
         "digest"
       ],
       "minimumReleaseAge": "14 days",
-      "ignoreTests": false
+      "ignoreTests": false,
+      "matchJsonata": [
+        "$exists(releaseTimestamp) and $not(isBump = true)"
+      ]
     },
     {
       "description": "Auto-merge pre-commit hook updates after 14 days",
@@ -29,7 +32,10 @@
         "patch"
       ],
       "minimumReleaseAge": "14 days",
-      "ignoreTests": false
+      "ignoreTests": false,
+      "matchJsonata": [
+        "$exists(releaseTimestamp) and $not(isBump = true)"
+      ]
     }
   ]
 }

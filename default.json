@@ -226,7 +226,7 @@
   ],
   "internalChecksFilter": "strict",
   "minimumReleaseAge": "7 days",
-  "minimumReleaseAgeBehaviour": "timestamp-required",
+  "minimumReleaseAgeBehaviour": "timestamp-optional",
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": [

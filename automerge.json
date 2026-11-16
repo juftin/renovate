@@ -2,7 +2,6 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": "Safe automerge rules preset",
   "internalChecksFilter": "strict",
-  "minimumReleaseAgeBehaviour": "timestamp-required",
   "vulnerabilityAlerts": {
     "minimumReleaseAge": null,
     "automerge": false
@@ -11,6 +10,7 @@
     {
       "description": "Auto-merge GitHub Actions updates after 14 days",
       "matchManagers": ["github-actions"],
+      "matchJsonata": ["$exists(releaseTimestamp) and $not(isBump = true)"],
       "automerge": true,
       "automergeType": "pr",
       "matchUpdateTypes": ["minor", "patch", "digest"],
@@ -20,6 +20,7 @@
     {
       "description": "Auto-merge pre-commit hook updates after 14 days",
       "matchManagers": ["pre-commit"],
+      "matchJsonata": ["$exists(releaseTimestamp) and $not(isBump = true)"],
       "automerge": true,
       "automergeType": "pr",
       "matchUpdateTypes": ["minor", "patch"],
@@ -29,6 +30,7 @@
     {
       "description": "Auto-merge Mise updates after 14 days",
       "matchManagers": ["mise"],
+      "matchJsonata": ["$exists(releaseTimestamp) and $not(isBump = true)"],
       "automerge": true,
       "automergeType": "pr",
       "matchUpdateTypes": ["minor", "patch", "digest"],

@@ -38,7 +38,7 @@ When updating an existing app's permissions, save the changes and approve the pe
 
 Set the `RENOVATE_TOKEN` or `APP_TOKEN` repository secret. A classic PAT needs `repo` and `workflow` scopes; a fine-grained PAT needs the applicable [Renovate permissions](https://docs.renovatebot.com/modules/platform/github/#running-using-a-fine-grained-token).
 
-The token must have access to all managed repositories. The built-in `github.token` fallback only has access to the runner repository.
+The token must have access to all managed repositories. The runner requires an App token or PAT and does not fall back to `github.token`.
 
 </details>
 
@@ -85,18 +85,29 @@ Edit the preset files to customize shared settings. The runner applies them auto
 <details>
 <summary>Dependency cool-down and lockfile guidance</summary>
 
-The default preset enforces a **7-day cool-down period** (`minimumReleaseAge: "7 days"`) with strict release-age checks (`internalChecksFilter: "strict"`) and required release timestamps (`minimumReleaseAgeBehaviour: "timestamp-required"`). During this window, updates remain pending and visible under the Dependency Dashboard before PRs are created.
+The default preset applies a **7-day cool-down period** (`minimumReleaseAge: "7 days"`) with strict release-age checks (`internalChecksFilter: "strict"`). Timestamped releases remain pending in the Dependency Dashboard during this window. Sources without timestamps remain eligible for manual review (`minimumReleaseAgeBehaviour: "timestamp-optional"`), avoiding indefinite stalls for Python versions and non–Docker Hub registries.
 
-Automerging requires a **14-day cool-down** (`minimumReleaseAge: "14 days"`). Security and vulnerability fixes are exempt from cool-downs (`minimumReleaseAge: null`, `automerge: false`) for immediate manual review.
+The shipped automerge rules require a release timestamp, a **14-day cool-down**, and passing checks. Bumps, pins, replacements, rollbacks, and lockfile maintenance require manual review regardless of the order of the shipped presets. Vulnerability-fix PRs bypass Renovate's cool-down for immediate manual review; the package manager's own cutoff still applies.
 
 ### uv and lockfiles
 
-Renovate's native `pep621` manager handles `pyproject.toml` and existing `uv.lock` files together. Weekly lockfile maintenance runs before 04:00 UTC on Mondays without release-age gates. Downstream projects using uv can configure matching client-side cutoffs in `pyproject.toml`:
+Renovate's native `pep621` manager handles `pyproject.toml` and existing `uv.lock` files together. Weekly lockfile maintenance runs before 04:00 UTC on Mondays for manual review. The runner passes `UV_EXCLUDE_NEWER="7 days"` to uv subprocesses, covering newly resolved direct and transitive dependencies even when a downstream project has no cutoff configured.
+
+This central environment setting takes precedence over a project's global uv cutoff. Use the same setting locally for consistent behavior, or configure it in `pyproject.toml`. If using these presets with another Renovate instance, configure that instance's uv environment too:
 
 ```toml
 [tool.uv]
 exclude-newer = "7 days"
 ```
+
+For a reviewed urgent fix, exempt only the affected package in the downstream project:
+
+```toml
+[tool.uv]
+exclude-newer-package = { affected-package = false }
+```
+
+Package-specific exceptions override the central cutoff. Remove the exception once the fixed release has aged. Private indexes without upload timestamps need an explicitly reviewed index-specific exception. Cooldowns do not detect known vulnerabilities: enable the dependency graph and Dependabot alerts, grant the App alert access, and add dependency review or a lockfile audit to downstream CI where supported.
 
 </details>
 
@@ -180,13 +191,17 @@ The workflow runs every 30 minutes, on relevant pushes to `main`, or manually:
 | `log_level` | `info` | `trace`, `debug`, `info`, `warn`, `error` |
 | `repo_cache` | `enabled` | `enabled`, `disabled`, `reset` |
 
-CI validates Renovate configuration, checks commit-style behavior, and runs `actionlint`. Local commit-style checks:
+Runtime and validation use the same digest-pinned full Renovate image. Its bundled Node, uv, and Python provide the validation environment without installing npm packages. Renovate's native Actions manager updates both image references; a regression test checks that they stay synchronized. All runner invocations share one concurrency group, including targeted dispatches. Workflow tokens default to read-only and checkouts do not persist credentials.
+
+CI validates configuration, tests native release-policy behavior and real uv lockfile resolutions, retains commit-style checks, and runs `actionlint`. Local commit-style checks:
 
 ```bash
 node --test .github/renovate-config.test.cjs
 ```
 
 A successful config check does not verify app permissions. Use a dry run and then a live run to verify discovery, PRs, and dashboards.
+
+Protect `main` with the required `validate-renovate-config` and `actionlint` checks, require review for changes to the runner/presets, and keep the bot subject to those checks. These GitHub settings and the installed App's permissions are managed separately from the preset. A local test pass does not establish that they are enabled.
 
 </details>
 
