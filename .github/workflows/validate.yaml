@@ -1,5 +1,7 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 name: validate
+permissions:
+  contents: read
 on:
   pull_request:
     branches:
@@ -14,20 +16,22 @@ jobs:
   renovate-config:
     name: validate-renovate-config
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/renovatebot/renovate:44.164.6-full@sha256:de0a2f27db5323570c14eee2fa613f3d9e01156c0d4888daa6af665de0634b5e
+      options: --user 0
+    defaults:
+      run:
+        shell: bash
+    env:
+      BASH_ENV: /usr/local/etc/env
     steps:
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
-      - name: Set up Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: 24.22.2
       - name: Validate Renovate configuration files
         run: |
-          # renovate: datasource=github-releases depName=renovatebot/renovate
-          RENOVATE_VERSION=44.164.6
-          npx --yes --package "renovate@${RENOVATE_VERSION}" -- renovate-config-validator --strict \
+          renovate-config-validator --strict \
             default.json \
             automerge.json \
             gitmoji.json \
@@ -35,7 +39,7 @@ jobs:
             .renovaterc.json5 \
             .github/renovate-config.js
       - name: Check commit style defaults and overrides
-        run: node --test .github/renovate-config.test.cjs
+        run: /usr/local/renovate/node --test .github/renovate-config.test.cjs .github/tests/*.test.mjs
   actionlint:
     name: actionlint
     runs-on: ubuntu-latest

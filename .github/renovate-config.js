@@ -23,6 +23,8 @@ const presets = [
 
 module.exports = {
   platform: "github",
+  // Also age transitive packages chosen by uv during lockfile maintenance.
+  customEnvVariables: { UV_EXCLUDE_NEWER: "7 days" },
   onboarding: false,
   requireConfig: "optional",
   forkProcessing: "enabled",
