@@ -159,14 +159,15 @@ test("native pep621 lockfile maintenance is weekly and manually reviewed", async
   assert.deepEqual(updates[0].schedule, ["before 4am on monday"]);
 });
 
-test("central uv cutoff reaches native Renovate child processes", () => {
+test("runner does not inject a global UV_EXCLUDE_NEWER cutoff into child processes", () => {
   const runner = createRequire(import.meta.url)(
     join(root, ".github/renovate-config.js"),
   );
   GlobalConfig.set({ ...getConfig(), ...runner, localDir: root });
   // Native parseConfigs initializes this process-level environment store.
-  setCustomEnv(runner.customEnvVariables);
-  assert.equal(getChildEnv().UV_EXCLUDE_NEWER, "7 days");
+  setCustomEnv(runner.customEnvVariables ?? {});
+  assert.equal(runner.customEnvVariables?.UV_EXCLUDE_NEWER, undefined);
+  assert.equal(getChildEnv().UV_EXCLUDE_NEWER, undefined);
 });
 
 test("runner and validation use one digest-pinned image that Renovate can update", async () => {

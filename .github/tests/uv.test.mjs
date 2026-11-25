@@ -15,19 +15,26 @@ const packages = ["cooldown-parent", "cooldown-child"];
 const versions = ["1.0.0", "1.1.0"];
 
 test(
-  "uv locks exclude fresh direct/transitive versions and allow only scoped exceptions",
+  "uv locks preserve downstream locked checks and honor project-configured cooldowns",
   { timeout: 60000 },
   async () => {
     const cwd = await mkdtemp(join(tmpdir(), "renovate-uv-"));
-    const env = Object.fromEntries(
+    const cleanEnv = Object.fromEntries(
       Object.entries(process.env).filter(
         ([key]) => !key.startsWith("UV_") && !key.startsWith("PIP_"),
       ),
     );
-    Object.assign(env, runner.customEnvVariables, {
+    const runnerEnv = {
+      ...cleanEnv,
+      ...(runner.customEnvVariables ?? {}),
       UV_CACHE_DIR: join(cwd, "cache"),
       UV_PYTHON_DOWNLOADS: "never",
-    });
+    };
+    const ciEnv = {
+      ...cleanEnv,
+      UV_CACHE_DIR: join(cwd, "cache"),
+      UV_PYTHON_DOWNLOADS: "never",
+    };
     const wheels = new Map();
     const server = createServer((request, response) => {
       const path = new URL(request.url, "http://localhost").pathname;
@@ -91,7 +98,7 @@ for name in ("cooldown-parent", "cooldown-child"):
 `,
           cwd,
         ],
-        { cwd, env },
+        { cwd, env: runnerEnv },
       );
       for (const name of packages)
         for (const version of versions) {
@@ -99,11 +106,14 @@ for name in ("cooldown-parent", "cooldown-child"):
           wheels.set(filename, await readFile(join(cwd, filename)));
         }
       await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
-      env.UV_DEFAULT_INDEX = `http://127.0.0.1:${server.address().port}/simple/`;
+      const indexUrl = `http://127.0.0.1:${server.address().port}/simple/`;
+      runnerEnv.UV_DEFAULT_INDEX = indexUrl;
+      ciEnv.UV_DEFAULT_INDEX = indexUrl;
       const project = `[project]\nname = "fixture"\nversion = "0.0.0"\nrequires-python = ">=3.9"\ndependencies = ["cooldown-parent>=1"]\n`;
-      await writeFile(join(cwd, "pyproject.toml"), project);
       const lock = async () => {
-        await exec("uv", ["lock", "--upgrade"], { cwd, env });
+        await exec("uv", ["lock", "--upgrade"], { cwd, env: runnerEnv });
+        // Downstream CI runs `uv sync --locked` / `uv lock --check` without runner env vars.
+        await exec("uv", ["lock", "--check"], { cwd, env: ciEnv });
         const content = await readFile(join(cwd, "uv.lock"), "utf8");
         return Object.fromEntries(
           packages.map((name) => [
@@ -114,6 +124,17 @@ for name in ("cooldown-parent", "cooldown-child"):
           ]),
         );
       };
+      // Projects without `[tool.uv] exclude-newer` stay compatible with locked CI checks.
+      await writeFile(join(cwd, "pyproject.toml"), project);
+      assert.deepEqual(await lock(), {
+        "cooldown-parent": "1.1.0",
+        "cooldown-child": "1.1.0",
+      });
+      // Projects that configure `[tool.uv] exclude-newer` age direct and transitive deps.
+      await writeFile(
+        join(cwd, "pyproject.toml"),
+        `${project}\n[tool.uv]\nexclude-newer = "7 days"\n`,
+      );
       assert.deepEqual(await lock(), {
         "cooldown-parent": "1.0.0",
         "cooldown-child": "1.0.0",
@@ -123,9 +144,10 @@ for name in ("cooldown-parent", "cooldown-child"):
         "cooldown-parent": "1.0.0",
         "cooldown-child": "1.0.0",
       });
+      // Scoped exceptions override the project cutoff only for the named package.
       await writeFile(
         join(cwd, "pyproject.toml"),
-        `${project}\n[tool.uv]\nexclude-newer-package = { cooldown-parent = false }\n`,
+        `${project}\n[tool.uv]\nexclude-newer = "7 days"\nexclude-newer-package = { cooldown-parent = false }\n`,
       );
       assert.deepEqual(await lock(), {
         "cooldown-parent": "1.1.0",
