@@ -91,9 +91,9 @@ The shipped automerge rules require a release timestamp, a **14-day cool-down**,
 
 ### uv and lockfiles
 
-Renovate's native `pep621` manager handles `pyproject.toml` and existing `uv.lock` files together. Weekly lockfile maintenance runs before 04:00 UTC on Mondays for manual review. The runner passes `UV_EXCLUDE_NEWER="7 days"` to uv subprocesses, covering newly resolved direct and transitive dependencies even when a downstream project has no cutoff configured.
+Renovate's native `pep621` manager handles `pyproject.toml` and existing `uv.lock` files together. Weekly lockfile maintenance runs before 04:00 UTC on Mondays for manual review.
 
-This central environment setting takes precedence over a project's global uv cutoff. Use the same setting locally for consistent behavior, or configure it in `pyproject.toml`. If using these presets with another Renovate instance, configure that instance's uv environment too:
+The runner does not inject `UV_EXCLUDE_NEWER` globally: `uv` records that setting in `uv.lock` (`[options] exclude-newer-span`), which causes `uv sync --locked` and `uv lock --check` to fail in downstream repositories that do not declare a matching cutoff. To age newly resolved direct and transitive dependencies in a `uv` project, configure the cutoff in that repository's `pyproject.toml`:
 
 ```toml
 [tool.uv]
@@ -107,7 +107,7 @@ For a reviewed urgent fix, exempt only the affected package in the downstream pr
 exclude-newer-package = { affected-package = false }
 ```
 
-Package-specific exceptions override the central cutoff. Remove the exception once the fixed release has aged. Private indexes without upload timestamps need an explicitly reviewed index-specific exception. Cooldowns do not detect known vulnerabilities: enable the dependency graph and Dependabot alerts, grant the App alert access, and add dependency review or a lockfile audit to downstream CI where supported.
+Package-specific exceptions override the project cutoff. Remove the exception once the fixed release has aged. Private indexes without upload timestamps need an explicitly reviewed index-specific exception. Cooldowns do not detect known vulnerabilities: enable the dependency graph and Dependabot alerts, grant the App alert access, and add dependency review or a lockfile audit to downstream CI where supported.
 
 </details>
 
