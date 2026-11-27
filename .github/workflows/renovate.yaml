@@ -96,7 +96,7 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token || secrets.APP_TOKEN || secrets.RENOVATE_TOKEN }}
           configurationFile: .github/renovate-config.js
-          renovate-image: ghcr.io/renovatebot/renovate:44.164.6-full@sha256:de0a2f27db5323570c14eee2fa613f3d9e01156c0d4888daa6af665de0634b5e
+          renovate-image: ghcr.io/renovatebot/renovate:45.3.2-full@sha256:6fde98271ba942ed3fae592267f3affd7fcab4b132fdc84511b4cdf3027011cf
         env:
           LOG_LEVEL: ${{ github.event.inputs.log_level || 'info' }}
           RENOVATE_DRY_RUN: ${{ github.event.inputs.dry_run != 'null' && github.event.inputs.dry_run || '' }}
